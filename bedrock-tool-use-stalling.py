@@ -10,14 +10,30 @@ import boto3
 from botocore.exceptions import ClientError
 
 
+def log(message, timestamp_mode=False, end="\n", flush=False):
+    """
+    Log a message with an optional timestamp.
+    
+    Args:
+        message (str): The message to log
+        timestamp_mode (bool): Whether to include a timestamp
+        end (str): String appended after the last character of message
+        flush (bool): Whether to force a flush of the output
+    """
+    if timestamp_mode:
+        current_time = datetime.datetime.now().isoformat(timespec='milliseconds')
+        print(f"[{current_time}] {message}", end=end, flush=flush)
+    else:
+        print(message, end=end, flush=flush)        
+
+
 def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
     """
     Invokes the Bedrock converseStream API with Claude v3.7 model with tool use support.
 
     Args:
         prompt (str): The user prompt to send to the model
-        model_id (str): The model ID to use
-        timestamp_mode (bool): Whether to print timestamps for each event
+        model_id (str): The model ID to usetimestamp_mode (bool): Whether to print timestamps for each event
 
     Returns:
         str: The full response text
@@ -94,20 +110,16 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
 
         for event in response.get("stream"):
             # Print timestamp if timestamp mode is enabled
-            timestamp = ""
-            if timestamp_mode:
-                current_time = datetime.datetime.now().isoformat(timespec='milliseconds')
-                timestamp = f"[{current_time}] "
-                
+
             if "messageStart" in event:
-                print(f"{timestamp}[Message started with role: {event['messageStart']['role']}]")
+                log(f"[Message started with role: {event['messageStart']['role']}]", timestamp_mode)
 
             elif "contentBlockStart" in event:
                 block_start = event["contentBlockStart"]["start"]
                 if "toolUse" in block_start:
                     tool = block_start["toolUse"]
                     tool_use = {"toolUseId": tool["toolUseId"], "name": tool["name"], "input": ""}
-                    print(f"\n{timestamp}[Tool Use Started: {tool['name']} (ID: {tool['toolUseId']})]")
+                    log(f"[Tool Use Started: {tool['name']} (ID: {tool['toolUseId']})]", timestamp_mode)
                     
                     # Add the toolUse to the assistant's message
                     current_content_block = {"toolUse": {
@@ -120,10 +132,7 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                 delta = event["contentBlockDelta"]["delta"]
                 if "text" in delta:
                     text_chunk = delta["text"]
-                    # Only print timestamp at the beginning of text chunks if in timestamp mode
-                    if timestamp_mode and text_chunk and text_chunk[0] not in [' ', '\n', '\t', ',', '.', '!', '?', ';', ':', ')']:
-                        print(f"\n{timestamp}", end="")
-                    print(text_chunk, end="", flush=True)
+                    log(text_chunk, timestamp_mode, flush=False)
                     current_text += text_chunk
                     
                     # If this is the first text chunk, add a text block to the assistant's message
@@ -138,6 +147,7 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                                 
                 elif "toolUse" in delta and "input" in delta["toolUse"]:
                     tool_use["input"] += delta["toolUse"]["input"]
+                    log(f"[Tool input: {delta['toolUse']['input']}] ", timestamp_mode, flush=True)
                     
                     # Update the toolUse in the assistant's message
                     if current_content_block and "toolUse" in current_content_block:
@@ -148,7 +158,7 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                     # Parse the tool input as JSON
                     try:
                         tool_use["input"] = json.loads(tool_use["input"])
-                        print(f"\n{timestamp}[Tool parameters: {json.dumps(tool_use['input'], indent=2)}]")
+                        log(f"[Tool parameters: {json.dumps(tool_use['input'])}]", timestamp_mode, flush=True)
                         
                         # Update the toolUse input in the assistant's message
                         if current_content_block and "toolUse" in current_content_block:
@@ -193,7 +203,7 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                             ]
 
                             # Call the API again with the tool result
-                            print(f"\n{timestamp}[Sending tool result back to the model...]")
+                            log(f"[Sending tool result back to the model...]", timestamp_mode)
                             try:
                                 continue_response = bedrock_runtime.converse_stream(
                                     modelId=model_id,
@@ -213,17 +223,14 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                                         continue_delta = continue_event["contentBlockDelta"]["delta"]
                                         if "text" in continue_delta:
                                             continue_text = continue_delta["text"]
-                                            # Only print timestamp at the beginning of text chunks if in timestamp mode
-                                            if timestamp_mode and continue_text and continue_text[0] not in [' ', '\n', '\t', ',', '.', '!', '?', ';', ':', ')']:
-                                                print(f"\n{continue_timestamp}", end="")
-                                            print(continue_text, end="", flush=True)
+                                            log(continue_text, timestamp_mode, flush=True)
                                             full_response += continue_text
                             except ClientError as e:
-                                print(f"\nError invoking Bedrock: {e}")
+                                log(f"\nError invoking Bedrock: {e}")
                                 # Continue with the response we have so far
 
                     except json.JSONDecodeError:
-                        print(f"\n{timestamp}[Error: Failed to parse tool input as JSON]")
+                        log(f"\n[Error: Failed to parse tool input as JSON]")
 
                     # Reset tool use
                     tool_use = {}
@@ -233,7 +240,7 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
 
             elif "messageStop" in event:
                 stop_reason = event["messageStop"].get("stopReason", "")
-                print(f"\n{timestamp}[Message stopped. Reason: {stop_reason}]")
+                log(f"[Message stopped. Reason: {stop_reason}]")
 
         print("\n" + "-" * 50)
         return full_response
@@ -261,7 +268,7 @@ def execute_fs_write(parameters, timestamp_mode=False):
         timestamp = f"[{current_time}] "
 
     if not command or not path:
-        print(f"\n[Tool Error: Missing required parameters]")
+        log(f"[Tool Error: Missing required parameters]")
         return False
 
     try:
@@ -274,13 +281,13 @@ def execute_fs_write(parameters, timestamp_mode=False):
             file_text = parameters.get("file_text", "")
             with open(path, "w") as f:
                 f.write(file_text)
-            print(f"\n[Tool Result: File created at {path}]")
+            log(f"[Tool Result: File created at {path}]")
             return True
 
         elif command == "append":
             new_str = parameters.get("new_str", "")
             if not os.path.exists(path):
-                print(f"\n[Tool Error: File {path} does not exist for append operation]")
+                log(f"[Tool Error: File {path} does not exist for append operation]")
                 return False
 
             with open(path, "a") as f:
@@ -292,7 +299,7 @@ def execute_fs_write(parameters, timestamp_mode=False):
                         if last_char != "\n":
                             f.write("\n")
                 f.write(new_str)
-            print(f"\n[Tool Result: Content appended to {path}]")
+            log(f"[Tool Result: Content appended to {path}]")
             return True
 
         elif command == "str_replace":
@@ -300,24 +307,24 @@ def execute_fs_write(parameters, timestamp_mode=False):
             new_str = parameters.get("new_str")
 
             if not old_str or new_str is None:
-                print(f"\n[Tool Error: Missing old_str or new_str for str_replace operation]")
+                log(f"[Tool Error: Missing old_str or new_str for str_replace operation]")
                 return False
 
             if not os.path.exists(path):
-                print(f"\n[Tool Error: File {path} does not exist for str_replace operation]")
+                log(f"[Tool Error: File {path} does not exist for str_replace operation]")
                 return False
 
             with open(path, "r") as f:
                 content = f.read()
 
             if old_str not in content:
-                print(f"\n[Tool Error: old_str not found in {path}]")
+                log(f"[Tool Error: old_str not found in {path}]")
                 return False
 
             new_content = content.replace(old_str, new_str)
             with open(path, "w") as f:
                 f.write(new_content)
-            print(f"\n[Tool Result: String replaced in {path}]")
+            log(f"[Tool Result: String replaced in {path}]")
             return True
 
         elif command == "insert":
@@ -325,32 +332,32 @@ def execute_fs_write(parameters, timestamp_mode=False):
             insert_line = parameters.get("insert_line")
 
             if new_str is None or insert_line is None:
-                print(f"\n[Tool Error: Missing new_str or insert_line for insert operation]")
+                log(f"[Tool Error: Missing new_str or insert_line for insert operation]")
                 return False
 
             if not os.path.exists(path):
-                print(f"\n[Tool Error: File {path} does not exist for insert operation]")
+                log(f"[Tool Error: File {path} does not exist for insert operation]")
                 return False
 
             with open(path, "r") as f:
                 lines = f.readlines()
 
             if insert_line < 0 or insert_line > len(lines):
-                print(f"\n[Tool Error: insert_line {insert_line} out of range for {path}]")
+                log(f"[Tool Error: insert_line {insert_line} out of range for {path}]")
                 return False
 
             lines.insert(insert_line, new_str + "\n")
             with open(path, "w") as f:
                 f.writelines(lines)
-            print(f"\n[Tool Result: Content inserted at line {insert_line} in {path}]")
+            log(f"[Tool Result: Content inserted at line {insert_line} in {path}]")
             return True
 
         else:
-            print(f"\n[Tool Error: Unknown command {command}]")
+            log(f"[Tool Error: Unknown command {command}]")
             return False
 
     except Exception as e:
-        print(f"\n[Tool Error: {str(e)}]")
+        log(f"[Tool Error: {str(e)}]")
         return False
 
 
@@ -377,7 +384,7 @@ def main():
 
     # Invoke the API with the specified options
     response = invoke_bedrock_converse_stream(prompt, model_id=args.model, timestamp_mode=args.timestamp)
-    print(f"\nResponse: {response}")
+    print(f"Response size: {len(response)}")
 
 
 if __name__ == "__main__":

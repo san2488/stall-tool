@@ -11,11 +11,23 @@ run: format
 run-hello-world:
 	source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "hello world"
 
-run-hello-world-tool:
+run-fibonacci-tool:
 	rm -f ./generate-fibonacci.py && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "write a concise program to generate fibonacci numbers into ./generate-fibonacci.py file"
 
 run-with-timestamp:
 	source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp
+
+run-lorem-ipsum-500-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "write 500 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-lorem-ipsum-1k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-lorem-ipsum-5k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "write 5000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-lorem-ipsum-5k-no-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "generate 5000 characters of lorem ipsum filler text. DO NOT USE any tool"
 
 clean:
 	rm -rf .venv
