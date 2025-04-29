@@ -261,11 +261,6 @@ def execute_fs_write(parameters, timestamp_mode=False):
     command = parameters.get("command")
     path = parameters.get("path")
 
-    # Get timestamp if in timestamp mode
-    timestamp = ""
-    if timestamp_mode:
-        current_time = datetime.datetime.now().isoformat(timespec='milliseconds')
-        timestamp = f"[{current_time}] "
 
     if not command or not path:
         log(f"[Tool Error: Missing required parameters]")

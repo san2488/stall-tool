@@ -1,4 +1,4 @@
-.PHONY: setup run run-hello-world run-hello-world-tool clean format install-dev
+.PHONY: setup run run-hello-world run-hello-world-tool clean format install-dev run-anthropic run-anthropic-lorem-ipsum-5k-tool
 
 setup:
 	uv venv
@@ -43,3 +43,15 @@ format:
 
 install-dev:
 	uv pip install -e ".[dev]"
+
+run-anthropic:
+	source .venv/bin/activate && python anthropic-tool-use.py --timestamp
+
+run-anthropic-hello-world:
+	source .venv/bin/activate && python anthropic-tool-use.py --timestamp "hello world"
+
+run-anthropic-lorem-ipsum-1k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python anthropic-tool-use.py --timestamp "write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-anthropic-lorem-ipsum-2k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python anthropic-tool-use.py --timestamp "write 2000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"

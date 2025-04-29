@@ -7,6 +7,7 @@ stalls exactly when generating the input to the tool. The delay is proportional 
 ## Files
 
 - `bedrock-tool-use-stalling.py`: A Python script that invokes the Bedrock converseStream API with Claude v3.7 and tool use support
+- `anthropic-tool-use.py`: A Python script that invokes the Anthropic Messages API directly with Claude v3.7 and tool use support (for comparison)
 
 ## Demo
 Run the following tool to see the stalled delay yourself. Sample out is available below
@@ -98,7 +99,46 @@ This enables the model to generate code, configuration files, or any text conten
 - The Claude v3.7 model is used in this example, but other models that support tool use can also be used
 - The region is set to us-west-2 by default, change it if your Bedrock endpoint is in a different region
 
+## Using the Anthropic API Directly
+
+This repository also includes a script to test the Anthropic API directly for comparison:
+
+```bash
+# Set your Anthropic API key
+export ANTHROPIC_API_KEY=your_api_key_here
+
+# Run the Anthropic script with no arguments
+make run-anthropic
+
+# Run with a simple "hello world" prompt
+make run-anthropic-hello-world
+
+# Run with a prompt that triggers tool use (create lorem ipsum text)
+make run-anthropic-lorem-ipsum-1k-tool
+make run-anthropic-lorem-ipsum-2k-tool
+```
+
+### Anthropic API Command Line Options
+
+The Anthropic script supports the following command line options:
+
+- `--timestamp` or `-t`: Enable timestamp mode to display ISO-format timestamps for each event in the stream
+- `--model` or `-m`: Specify a different model ID (default: `claude-3-sonnet-20240229`)
+
+Example:
+```bash
+python anthropic-tool-use.py --timestamp --model "claude-3-sonnet-20240229" "Your prompt here"
+```
+
+### Comparison Results
+
+Testing confirms that the same stalling behavior is observed in both the Bedrock implementation and direct Anthropic API calls. The delay occurs specifically when generating tool inputs, with the delay being proportional to the size of the content being generated.
+
+
+
 ## Sample Output with tool stalling
+
+### Bedrock
 
 ```
 make run-lorem-ipsum-5k-tool
@@ -1044,4 +1084,350 @@ I
 
 --------------------------------------------------
 Response size: 376
+```
+
+### Anthropic 1P
+
+```
+make run-anthropic-lorem-ipsum-2k-tool
+rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python anthropic-tool-use.py --timestamp "write 2000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+Streaming response from Claude:
+[2025-04-29T10:43:31.783] --------------------------------------------------
+[2025-04-29T10:43:31.783] API URL: https://api.anthropic.com/v1/messages
+[2025-04-29T10:43:31.783] Headers: {"anthropic-version": "2023-06-01", "content-type": "application/json", "accept": "text/event-stream"}
+[2025-04-29T10:43:31.783] Request data: {"model": "claude-3-7-sonnet-20250219", "messages": [{"role": "user", "content": "write 2000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"}], "tools": [{"name": "fs_write", "description": "A tool for creating and editing files\n * The `create` command will override the file at `path` if it already exists as a file, and otherwise create a new file\n * The `append` command will add content to the end of an existing file, automatically adding a newline if the file doesn't end with one. The file must exist.\n Notes for using the `str_replace` command:\n * The `old_str` parameter should match EXACTLY one or more consecutive lines from the original file. Be mindful of whitespaces!\n * If the `old_str` parameter is not unique in the file, the replacement will not be performed. Make sure to include enough context in `old_str` to make it unique\n * The `new_str` parameter should contain the edited lines that should replace the `old_str`.", "input_schema": {"type": "object", "properties": {"command": {"type": "string", "enum": ["create", "str_replace", "insert", "append"], "description": "The commands to run. Allowed options are: `create`, `str_replace`, `insert`, `append`."}, "path": {"type": "string", "description": "Absolute path to file or directory, e.g. `/repo/file.py` or `/repo`."}, "file_text": {"type": "string", "description": "Required parameter of `create` command, with the content of the file to be created."}, "old_str": {"type": "string", "description": "Required parameter of `str_replace` command containing the string in `path` to replace."}, "new_str": {"type": "string", "description": "Required parameter of `str_replace` command containing the new string. Required parameter of `insert` command containing the string to insert. Required parameter of `append` command containing the content to append to the file."}, "insert_line": {"type": "integer", "description": "Required parameter of `insert` command. The `new_str` will be inserted AFTER the line `insert_line` of `path`."}}, "required": ["command", "path"]}}], "max_tokens": 4096, "stream": true}
+[2025-04-29T10:43:33.138] [Message started with role: assistant]
+[2025-04-29T10:43:33.138] [Content block start: text]
+[2025-04-29T10:43:33.138] [Content block data: {"type": "text", "text": ""}]
+[2025-04-29T10:43:33.144] I'll generate
+[2025-04-29T10:43:33.194]  2000 characters
+[2025-04-29T10:43:33.245]  of lorem ipsum filler
+[2025-04-29T10:43:33.293]  text and save it to
+[2025-04-29T10:43:33.386]  the file `/tmp/lorem-
+[2025-04-29T10:43:33.439] ipsum.txt`.
+[2025-04-29T10:43:33.676] [Content block stopped]
+[2025-04-29T10:43:33.676] [Content block start: tool_use]
+[2025-04-29T10:43:33.676] [Content block data: {"type": "tool_use", "id": "toolu_01LwCcwsUQxkuHub4jfGNsn7", "name": "fs_write", "input": {}}]
+[2025-04-29T10:43:33.676] [Tool Use Started: fs_write (ID: toolu_01LwCcwsUQxkuHub4jfGNsn7)]
+[2025-04-29T10:43:33.676] [Tool input part: ]
+[2025-04-29T10:43:33.919] [Tool input part: {"comman]
+[2025-04-29T10:43:33.919] [Tool input part: d": "create"]
+[2025-04-29T10:43:34.157] [Tool input part: , "path": ]
+[2025-04-29T10:43:34.158] [Tool input part: "/tmp/]
+[2025-04-29T10:43:34.158] [Tool input part: lor]
+[2025-04-29T10:43:34.158] [Tool input part: em-ipsum.]
+[2025-04-29T10:43:34.158] [Tool input part: txt]
+---------------------------------------------------------------------
+Notice the long delay when generating `file_text` input param
+---------------------------------------------------------------------
+[2025-04-29T10:43:34.158] [Tool input part: "]
+[2025-04-29T10:43:44.612] [Tool input part: , "]
+[2025-04-29T10:43:44.613] [Tool input part: file_t]
+[2025-04-29T10:43:44.614] [Tool input part: ext"]
+[2025-04-29T10:43:44.618] [Tool input part: : "Lorem ]
+[2025-04-29T10:43:44.621] [Tool input part: ipsum do]
+[2025-04-29T10:43:44.649] [Tool input part: lor sit ]
+[2025-04-29T10:43:44.649] [Tool input part: amet, con]
+[2025-04-29T10:43:44.654] [Tool input part: sectetur]
+[2025-04-29T10:43:44.659] [Tool input part:  adipiscing]
+[2025-04-29T10:43:44.659] [Tool input part:  e]
+[2025-04-29T10:43:44.665] [Tool input part: lit. Nul]
+[2025-04-29T10:43:44.665] [Tool input part: lam auctor, ]
+[2025-04-29T10:43:44.665] [Tool input part: nisl ]
+[2025-04-29T10:43:44.665] [Tool input part: ege]
+[2025-04-29T10:43:44.665] [Tool input part: t ult]
+[2025-04-29T10:43:44.665] [Tool input part: ricies]
+[2025-04-29T10:43:44.665] [Tool input part:  ti]
+[2025-04-29T10:43:44.666] [Tool input part: ncidunt, n]
+[2025-04-29T10:43:44.666] [Tool input part: un]
+[2025-04-29T10:43:44.666] [Tool input part: c nisl ]
+[2025-04-29T10:43:44.668] [Tool input part: aliquam ]
+[2025-04-29T10:43:44.668] [Tool input part: nisl]
+[2025-04-29T10:43:44.671] [Tool input part: , eget a]
+[2025-04-29T10:43:44.675] [Tool input part: liquam ]
+[2025-04-29T10:43:44.675] [Tool input part: nunc ni]
+[2025-04-29T10:43:44.675] [Tool input part: sl ]
+[2025-04-29T10:43:44.675] [Tool input part: eget]
+[2025-04-29T10:43:44.675] [Tool input part:  nunc. Nulla]
+[2025-04-29T10:43:44.675] [Tool input part: m au]
+[2025-04-29T10:43:44.675] [Tool input part: ctor, nisl]
+[2025-04-29T10:43:44.678] [Tool input part:  eget ultri]
+[2025-04-29T10:43:44.679] [Tool input part: cie]
+[2025-04-29T10:43:44.679] [Tool input part: s tincid]
+[2025-04-29T10:43:44.681] [Tool input part: unt, nunc ni]
+[2025-04-29T10:43:44.681] [Tool input part: sl aliquam]
+[2025-04-29T10:43:44.682] [Tool input part:  nisl,]
+[2025-04-29T10:43:44.682] [Tool input part:  eget aliqu]
+[2025-04-29T10:43:44.683] [Tool input part: am nu]
+[2025-04-29T10:43:44.683] [Tool input part: nc nis]
+[2025-04-29T10:43:44.683] [Tool input part: l eget nu]
+[2025-04-29T10:43:44.685] [Tool input part: nc. Pellente]
+[2025-04-29T10:43:44.686] [Tool input part: sque habi]
+[2025-04-29T10:43:44.688] [Tool input part: tant morbi t]
+[2025-04-29T10:43:44.689] [Tool input part: ristiq]
+[2025-04-29T10:43:44.689] [Tool input part: ue se]
+[2025-04-29T10:43:44.689] [Tool input part: nectus et ne]
+[2025-04-29T10:43:44.689] [Tool input part: tus et ]
+[2025-04-29T10:43:44.690] [Tool input part: malesuada]
+[2025-04-29T10:43:44.690] [Tool input part:  fames ac t]
+[2025-04-29T10:43:44.696] [Tool input part: urpis eges]
+[2025-04-29T10:43:44.696] [Tool input part: tas. S]
+[2025-04-29T10:43:44.696] [Tool input part: ed vitae nu]
+[2025-04-29T10:43:44.696] [Tool input part: ll]
+[2025-04-29T10:43:44.696] [Tool input part: a at ve]
+[2025-04-29T10:43:44.696] [Tool input part: lit tincidun]
+[2025-04-29T10:43:44.696] [Tool input part: t aliqu]
+[2025-04-29T10:43:44.696] [Tool input part: am. Done]
+[2025-04-29T10:43:44.696] [Tool input part: c euismod, ]
+[2025-04-29T10:43:44.696] [Tool input part: justo sed]
+[2025-04-29T10:43:44.696] [Tool input part:  congu]
+[2025-04-29T10:43:44.696] [Tool input part: e tinc]
+[2025-04-29T10:43:44.696] [Tool input part: idu]
+[2025-04-29T10:43:44.696] [Tool input part: nt, n]
+[2025-04-29T10:43:44.696] [Tool input part: isl ni]
+[2025-04-29T10:43:44.696] [Tool input part: sl a]
+[2025-04-29T10:43:44.696] [Tool input part: liquam n]
+[2025-04-29T10:43:44.696] [Tool input part: isl, eget al]
+[2025-04-29T10:43:44.696] [Tool input part: iquam ]
+[2025-04-29T10:43:44.696] [Tool input part: nunc ]
+[2025-04-29T10:43:44.698] [Tool input part: nisl eget]
+[2025-04-29T10:43:44.708] [Tool input part:  nu]
+[2025-04-29T10:43:44.708] [Tool input part: nc]
+[2025-04-29T10:43:44.708] [Tool input part: . Pel]
+[2025-04-29T10:43:44.708] [Tool input part: lentesque h]
+[2025-04-29T10:43:44.708] [Tool input part: abit]
+[2025-04-29T10:43:44.708] [Tool input part: ant mo]
+[2025-04-29T10:43:44.708] [Tool input part: rbi tristi]
+[2025-04-29T10:43:44.708] [Tool input part: que ]
+[2025-04-29T10:43:44.708] [Tool input part: senect]
+[2025-04-29T10:43:44.708] [Tool input part: us et ]
+[2025-04-29T10:43:44.708] [Tool input part: netu]
+[2025-04-29T10:43:44.715] [Tool input part: s et ma]
+[2025-04-29T10:43:44.715] [Tool input part: lesuad]
+[2025-04-29T10:43:44.715] [Tool input part: a fa]
+[2025-04-29T10:43:44.715] [Tool input part: mes ac turp]
+[2025-04-29T10:43:44.715] [Tool input part: is]
+[2025-04-29T10:43:44.715] [Tool input part:  e]
+[2025-04-29T10:43:44.715] [Tool input part: ge]
+[2025-04-29T10:43:44.718] [Tool input part: stas. Sed v]
+[2025-04-29T10:43:44.718] [Tool input part: itae null]
+[2025-04-29T10:43:44.718] [Tool input part: a ]
+[2025-04-29T10:43:44.718] [Tool input part: at velit t]
+[2025-04-29T10:43:44.718] [Tool input part: incidunt ]
+[2025-04-29T10:43:44.718] [Tool input part: aliquam.\n\]
+[2025-04-29T10:43:44.718] [Tool input part: nVest]
+[2025-04-29T10:43:44.718] [Tool input part: ibulum]
+[2025-04-29T10:43:44.722] [Tool input part:  ante ipsum]
+[2025-04-29T10:43:44.722] [Tool input part:  primis in]
+[2025-04-29T10:43:44.722] [Tool input part:  faucibus o]
+[2025-04-29T10:43:44.722] [Tool input part: rci ]
+[2025-04-29T10:43:44.722] [Tool input part: luc]
+[2025-04-29T10:43:44.722] [Tool input part: tus et]
+[2025-04-29T10:43:44.722] [Tool input part:  ultrices po]
+[2025-04-29T10:43:44.722] [Tool input part: suere cub]
+[2025-04-29T10:43:44.730] [Tool input part: ilia ]
+[2025-04-29T10:43:44.730] [Tool input part: Curae; Do]
+[2025-04-29T10:43:44.730] [Tool input part: nec e]
+[2025-04-29T10:43:44.730] [Tool input part: uismod]
+[2025-04-29T10:43:44.730] [Tool input part: , justo]
+[2025-04-29T10:43:44.730] [Tool input part:  sed ]
+[2025-04-29T10:43:44.730] [Tool input part: cong]
+[2025-04-29T10:43:44.730] [Tool input part: ue ]
+[2025-04-29T10:43:44.730] [Tool input part: tinci]
+[2025-04-29T10:43:44.730] [Tool input part: dunt]
+[2025-04-29T10:43:44.730] [Tool input part: , ni]
+[2025-04-29T10:43:44.730] [Tool input part: sl nisl ]
+[2025-04-29T10:43:44.730] [Tool input part: aliquam ni]
+[2025-04-29T10:43:44.730] [Tool input part: sl, e]
+[2025-04-29T10:43:44.730] [Tool input part: get aliquam ]
+[2025-04-29T10:43:44.730] [Tool input part: nunc ni]
+[2025-04-29T10:43:44.732] [Tool input part: sl eget ]
+[2025-04-29T10:43:44.732] [Tool input part: nunc. Nu]
+[2025-04-29T10:43:44.732] [Tool input part: llam auctor,]
+[2025-04-29T10:43:44.732] [Tool input part:  nisl eget u]
+[2025-04-29T10:43:44.732] [Tool input part: ltrici]
+[2025-04-29T10:43:44.732] [Tool input part: es tinc]
+[2025-04-29T10:43:44.732] [Tool input part: idunt, nunc ]
+[2025-04-29T10:43:44.732] [Tool input part: nisl a]
+[2025-04-29T10:43:44.737] [Tool input part: liqua]
+[2025-04-29T10:43:44.737] [Tool input part: m n]
+[2025-04-29T10:43:44.737] [Tool input part: isl, eget]
+[2025-04-29T10:43:44.737] [Tool input part:  aliquam]
+[2025-04-29T10:43:44.737] [Tool input part:  nunc]
+[2025-04-29T10:43:44.737] [Tool input part:  nisl eget n]
+[2025-04-29T10:43:44.737] [Tool input part: unc. Pe]
+[2025-04-29T10:43:44.737] [Tool input part: ll]
+[2025-04-29T10:43:44.737] [Tool input part: entesqu]
+[2025-04-29T10:43:44.737] [Tool input part: e h]
+[2025-04-29T10:43:44.737] [Tool input part: abitant]
+[2025-04-29T10:43:44.737] [Tool input part:  morbi tris]
+[2025-04-29T10:43:44.737] [Tool input part: tique se]
+[2025-04-29T10:43:44.737] [Tool input part: nectus et ]
+[2025-04-29T10:43:44.737] [Tool input part: net]
+[2025-04-29T10:43:44.737] [Tool input part: us et male]
+[2025-04-29T10:43:44.737] [Tool input part: su]
+[2025-04-29T10:43:44.737] [Tool input part: ada fames a]
+[2025-04-29T10:43:44.737] [Tool input part: c t]
+[2025-04-29T10:43:44.737] [Tool input part: urpi]
+[2025-04-29T10:43:44.737] [Tool input part: s ege]
+[2025-04-29T10:43:44.737] [Tool input part: stas. S]
+[2025-04-29T10:43:44.738] [Tool input part: ed]
+[2025-04-29T10:43:44.738] [Tool input part:  v]
+[2025-04-29T10:43:44.738] [Tool input part: it]
+[2025-04-29T10:43:44.739] [Tool input part: ae nul]
+[2025-04-29T10:43:44.739] [Tool input part: la at veli]
+[2025-04-29T10:43:44.739] [Tool input part: t t]
+[2025-04-29T10:43:44.740] [Tool input part: incidunt ali]
+[2025-04-29T10:43:44.740] [Tool input part: quam.\n\nQ]
+[2025-04-29T10:43:44.740] [Tool input part: uisque var]
+[2025-04-29T10:43:44.740] [Tool input part: ius d]
+[2025-04-29T10:43:44.740] [Tool input part: iam vel ]
+[2025-04-29T10:43:44.740] [Tool input part: metus mat]
+[2025-04-29T10:43:44.740] [Tool input part: tis, at a]
+[2025-04-29T10:43:44.740] [Tool input part: uc]
+[2025-04-29T10:43:44.740] [Tool input part: to]
+[2025-04-29T10:43:44.740] [Tool input part: r dui vol]
+[2025-04-29T10:43:44.740] [Tool input part: ut]
+[2025-04-29T10:43:44.740] [Tool input part: pat. Inte]
+[2025-04-29T10:43:44.740] [Tool input part: ger sem]
+[2025-04-29T10:43:44.747] [Tool input part: per se]
+[2025-04-29T10:43:44.747] [Tool input part: m lore]
+[2025-04-29T10:43:44.747] [Tool input part: m, sceler]
+[2025-04-29T10:43:44.747] [Tool input part: isque s]
+[2025-04-29T10:43:44.747] [Tool input part: usci]
+[2025-04-29T10:43:44.747] [Tool input part: pit lacus c]
+[2025-04-29T10:43:44.747] [Tool input part: onsequat n]
+[2025-04-29T10:43:44.747] [Tool input part: ec. Et]
+[2025-04-29T10:43:44.747] [Tool input part: iam euism]
+[2025-04-29T10:43:44.747] [Tool input part: od]
+[2025-04-29T10:43:44.747] [Tool input part:  pellentesq]
+[2025-04-29T10:43:44.747] [Tool input part: ue]
+[2025-04-29T10:43:44.747] [Tool input part:  i]
+[2025-04-29T10:43:44.747] [Tool input part: mperdiet. Cr]
+[2025-04-29T10:43:44.747] [Tool input part: as i]
+[2025-04-29T10:43:44.747] [Tool input part: nterdum le]
+[2025-04-29T10:43:44.747] [Tool input part: ctus se]
+[2025-04-29T10:43:44.747] [Tool input part: d dui]
+[2025-04-29T10:43:44.747] [Tool input part:  plac]
+[2025-04-29T10:43:44.747] [Tool input part: erat]
+[2025-04-29T10:43:44.747] [Tool input part: , non ph]
+[2025-04-29T10:43:44.747] [Tool input part: aretra t]
+[2025-04-29T10:43:44.747] [Tool input part: ortor va]
+[2025-04-29T10:43:44.747] [Tool input part: rius. Aliqu]
+[2025-04-29T10:43:44.747] [Tool input part: am in to]
+[2025-04-29T10:43:44.748] [Tool input part: rtor at]
+[2025-04-29T10:43:44.748] [Tool input part:  quam p]
+[2025-04-29T10:43:44.748] [Tool input part: ulvinar ]
+[2025-04-29T10:43:44.748] [Tool input part: tempus p]
+[2025-04-29T10:43:44.748] [Tool input part: osuere in ri]
+[2025-04-29T10:43:44.748] [Tool input part: sus. ]
+[2025-04-29T10:43:44.748] [Tool input part: Susp]
+[2025-04-29T10:43:44.748] [Tool input part: endisse ]
+[2025-04-29T10:43:44.748] [Tool input part: potenti. P]
+[2025-04-29T10:43:44.748] [Tool input part: raesent ]
+[2025-04-29T10:43:44.748] [Tool input part: vel tincid]
+[2025-04-29T10:43:44.748] [Tool input part: unt eros, no]
+[2025-04-29T10:43:44.748] [Tool input part: n blandit]
+[2025-04-29T10:43:44.748] [Tool input part:  fel]
+[2025-04-29T10:43:44.748] [Tool input part: is]
+[2025-04-29T10:43:44.748] [Tool input part: . Null]
+[2025-04-29T10:43:44.748] [Tool input part: am fermentum]
+[2025-04-29T10:43:44.748] [Tool input part: , orci in co]
+[2025-04-29T10:43:44.748] [Tool input part: nvallis ali]
+[2025-04-29T10:43:44.748] [Tool input part: quam, nibh]
+[2025-04-29T10:43:44.748] [Tool input part:  dolor eff]
+[2025-04-29T10:43:44.748] [Tool input part: icitur odi]
+[2025-04-29T10:43:44.748] [Tool input part: o, eget r]
+[2025-04-29T10:43:44.748] [Tool input part: utrum e]
+[2025-04-29T10:43:44.748] [Tool input part: nim]
+[2025-04-29T10:43:44.748] [Tool input part:  turpis ]
+[2025-04-29T10:43:44.748] [Tool input part: eg]
+[2025-04-29T10:43:44.748] [Tool input part: et enim.]
+[2025-04-29T10:43:44.748] [Tool input part: \n\]
+[2025-04-29T10:43:44.748] [Tool input part: nFusce di]
+[2025-04-29T10:43:44.748] [Tool input part: gnissim,]
+[2025-04-29T10:43:44.748] [Tool input part:  elit nec]
+[2025-04-29T10:43:44.748] [Tool input part:  elem]
+[2025-04-29T10:43:44.748] [Tool input part: entu]
+[2025-04-29T10:43:44.748] [Tool input part: m cursu]
+[2025-04-29T10:43:44.748] [Tool input part: s, ero]
+[2025-04-29T10:43:44.748] [Tool input part: s sapi]
+[2025-04-29T10:43:44.748] [Tool input part: en]
+[2025-04-29T10:43:44.748] [Tool input part:  facilisis ]
+[2025-04-29T10:43:44.748] [Tool input part: ex]
+[2025-04-29T10:43:44.748] [Tool input part: , eu hen]
+[2025-04-29T10:43:44.748] [Tool input part: dr]
+[2025-04-29T10:43:44.748] [Tool input part: erit metu]
+[2025-04-29T10:43:44.748] [Tool input part: s nisi]
+[2025-04-29T10:43:44.748] [Tool input part:  feug]
+[2025-04-29T10:43:44.748] [Tool input part: iat eros. D]
+[2025-04-29T10:43:44.748] [Tool input part: uis fermentu]
+[2025-04-29T10:43:44.748] [Tool input part: m massa]
+[2025-04-29T10:43:44.750] [Tool input part:  id tempor ]
+[2025-04-29T10:43:44.750] [Tool input part: feugiat. M]
+[2025-04-29T10:43:44.750] [Tool input part: orbi conseq]
+[2025-04-29T10:43:44.750] [Tool input part: uat ]
+[2025-04-29T10:43:44.750] [Tool input part: fe]
+[2025-04-29T10:43:44.750] [Tool input part: lis efficitu]
+[2025-04-29T10:43:44.750] [Tool input part: r velit d]
+[2025-04-29T10:43:44.750] [Tool input part: ictum, a ul]
+[2025-04-29T10:43:44.750] [Tool input part: tricies]
+[2025-04-29T10:43:44.750] [Tool input part:  eros place]
+[2025-04-29T10:43:44.750] [Tool input part: rat. Quis]
+[2025-04-29T10:43:44.750] [Tool input part: que alique]
+[2025-04-29T10:43:44.750] [Tool input part: t ve]
+[2025-04-29T10:43:44.750] [Tool input part: l magna ]
+[2025-04-29T10:43:44.750] [Tool input part: vita]
+[2025-04-29T10:43:44.750] [Tool input part: e max]
+[2025-04-29T10:43:44.750] [Tool input part: imus. Pro]
+[2025-04-29T10:43:44.750] [Tool input part: in eu enim]
+[2025-04-29T10:43:44.750] [Tool input part:  eu nibh u]
+[2025-04-29T10:43:44.750] [Tool input part: ltrices]
+[2025-04-29T10:43:44.750] [Tool input part:  pe]
+[2025-04-29T10:43:44.750] [Tool input part: llen]
+[2025-04-29T10:43:44.750] [Tool input part: tesque. Ve]
+[2025-04-29T10:43:44.750] [Tool input part: stibulum ele]
+[2025-04-29T10:43:44.750] [Tool input part: men]
+[2025-04-29T10:43:44.750] [Tool input part: tum ]
+[2025-04-29T10:43:44.750] [Tool input part: iaculis dui,]
+[2025-04-29T10:43:44.750] [Tool input part:  at blandit]
+[2025-04-29T10:43:44.750] [Tool input part:  ante matti]
+[2025-04-29T10:43:44.750] [Tool input part: s id. V]
+[2025-04-29T10:43:44.750] [Tool input part: esti]
+[2025-04-29T10:43:44.750] [Tool input part: bulum fauc]
+[2025-04-29T10:43:44.750] [Tool input part: ibus sollici]
+[2025-04-29T10:43:44.750] [Tool input part: tudin nulla,]
+[2025-04-29T10:43:44.750] [Tool input part:  in mo]
+[2025-04-29T10:43:44.750] [Tool input part: lestie orci ]
+[2025-04-29T10:43:44.750] [Tool input part: ultrices ]
+[2025-04-29T10:43:44.750] [Tool input part: eget. P]
+[2025-04-29T10:43:44.750] [Tool input part: roin a magn]
+[2025-04-29T10:43:44.750] [Tool input part: a ]
+[2025-04-29T10:43:44.750] [Tool input part: ut]
+[2025-04-29T10:43:44.750] [Tool input part:  o]
+[2025-04-29T10:43:44.750] [Tool input part: rci co]
+[2025-04-29T10:43:44.750] [Tool input part: nsectetur ]
+[2025-04-29T10:43:44.750] [Tool input part: consectet]
+[2025-04-29T10:43:44.750] [Tool input part: ur nec vel ]
+[2025-04-29T10:43:44.750] [Tool input part: magn]
+[2025-04-29T10:43:44.751] [Tool input part: a. Curabit]
+[2025-04-29T10:43:44.751] [Tool input part: ur rutrum]
+[2025-04-29T10:43:44.751] [Tool input part:  orci n]
+[2025-04-29T10:43:44.751] [Tool input part: ec i]
+[2025-04-29T10:43:44.751] [Tool input part: ps]
+[2025-04-29T10:43:44.751] [Tool input part: um faucibus]
+[2025-04-29T10:43:44.751] [Tool input part: , ]
+[2025-04-29T10:43:44.751] [Tool input part: at ]
+[2025-04-29T10:43:44.751] [Tool input part: venen]
+[2025-04-29T10:43:44.751] [Tool input part: atis just]
+[2025-04-29T10:43:44.751] [Tool input part: o lobortis."}]
+[2025-04-29T10:43:44.751] [Complete tool input: {"command": "create", "path": "/tmp/lorem-ipsum.txt", "file_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies tincidunt, nunc nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Nullam auctor, nisl eget ultricies tincidunt, nunc nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae nulla at velit tincidunt aliquam. Donec euismod, justo sed congue tincidunt, nisl nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae nulla at velit tincidunt aliquam.\n\nVestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec euismod, justo sed congue tincidunt, nisl nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Nullam auctor, nisl eget ultricies tincidunt, nunc nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae nulla at velit tincidunt aliquam.\n\nQuisque varius diam vel metus mattis, at auctor dui volutpat. Integer semper sem lorem, scelerisque suscipit lacus consequat nec. Etiam euismod pellentesque imperdiet. Cras interdum lectus sed dui placerat, non pharetra tortor varius. Aliquam in tortor at quam pulvinar tempus posuere in risus. Suspendisse potenti. Praesent vel tincidunt eros, non blandit felis. Nullam fermentum, orci in convallis aliquam, nibh dolor efficitur odio, eget rutrum enim turpis eget enim.\n\nFusce dignissim, elit nec elementum cursus, eros sapien facilisis ex, eu hendrerit metus nisi feugiat eros. Duis fermentum massa id tempor feugiat. Morbi consequat felis efficitur velit dictum, a ultricies eros placerat. Quisque aliquet vel magna vitae maximus. Proin eu enim eu nibh ultrices pellentesque. Vestibulum elementum iaculis dui, at blandit ante mattis id. Vestibulum faucibus sollicitudin nulla, in molestie orci ultrices eget. Proin a magna ut orci consectetur consectetur nec vel magna. Curabitur rutrum orci nec ipsum faucibus, at venenatis justo lobortis."}]
+[2025-04-29T10:43:44.751] [Content block stopped]
+[2025-04-29T10:43:44.751] [Tool parameters: {"command": "create", "path": "/tmp/lorem-ipsum.txt", "file_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies tincidunt, nunc nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Nullam auctor, nisl eget ultricies tincidunt, nunc nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae nulla at velit tincidunt aliquam. Donec euismod, justo sed congue tincidunt, nisl nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae nulla at velit tincidunt aliquam.\n\nVestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec euismod, justo sed congue tincidunt, nisl nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Nullam auctor, nisl eget ultricies tincidunt, nunc nisl aliquam nisl, eget aliquam nunc nisl eget nunc. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae nulla at velit tincidunt aliquam.\n\nQuisque varius diam vel metus mattis, at auctor dui volutpat. Integer semper sem lorem, scelerisque suscipit lacus consequat nec. Etiam euismod pellentesque imperdiet. Cras interdum lectus sed dui placerat, non pharetra tortor varius. Aliquam in tortor at quam pulvinar tempus posuere in risus. Suspendisse potenti. Praesent vel tincidunt eros, non blandit felis. Nullam fermentum, orci in convallis aliquam, nibh dolor efficitur odio, eget rutrum enim turpis eget enim.\n\nFusce dignissim, elit nec elementum cursus, eros sapien facilisis ex, eu hendrerit metus nisi feugiat eros. Duis fermentum massa id tempor feugiat. Morbi consequat felis efficitur velit dictum, a ultricies eros placerat. Quisque aliquet vel magna vitae maximus. Proin eu enim eu nibh ultrices pellentesque. Vestibulum elementum iaculis dui, at blandit ante mattis id. Vestibulum faucibus sollicitudin nulla, in molestie orci ultrices eget. Proin a magna ut orci consectetur consectetur nec vel magna. Curabitur rutrum orci nec ipsum faucibus, at venenatis justo lobortis."}]
+[Tool Result: File created at /tmp/lorem-ipsum.txt]
+[2025-04-29T10:43:44.751] [Sending tool result back to the model...]
+[2025-04-29T10:43:46.637] [Message delta with stop_reason: tool_use]
+[2025-04-29T10:43:46.637] [Message stopped]
+[2025-04-29T10:43:46.637] --------------------------------------------------
+Response size: 208
 ```
