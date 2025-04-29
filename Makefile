@@ -9,10 +9,13 @@ run: format
 	source .venv/bin/activate && python bedrock-tool-use-stalling.py
 
 run-hello-world:
-	source .venv/bin/activate && python bedrock-tool-use-stalling.py "hello world"
+	source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "hello world"
 
 run-hello-world-tool:
-	rm -f ./generate-fibonacci.py && source .venv/bin/activate && python bedrock-tool-use-stalling.py "write a concise program to generate fibonacci numbers into ./generate-fibonacci.py file"
+	rm -f ./generate-fibonacci.py && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "write a concise program to generate fibonacci numbers into ./generate-fibonacci.py file"
+
+run-with-timestamp:
+	source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp
 
 clean:
 	rm -rf .venv

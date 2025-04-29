@@ -16,6 +16,7 @@ This project shows how to properly implement tool use with Claude v3.7 through t
 - Correct implementation of tool definitions and schemas
 - Processing of streaming responses with tool use events
 - Execution of tools and sending results back to the model
+- Optional timestamp mode for debugging and tracking response timing
 
 ## Setup and Usage
 
@@ -36,6 +37,9 @@ make run-hello-world
 # Run with a prompt that triggers tool use (create a Fibonacci generator)
 make run-hello-world-tool
 
+# Run with timestamp mode enabled
+make run-with-timestamp
+
 # Format code
 make format
 
@@ -55,6 +59,21 @@ uv pip install -r requirements.txt
 # Run the script
 source .venv/bin/activate
 python bedrock-tool-use-stalling.py "Your prompt here"
+
+# Run with timestamp mode enabled
+python bedrock-tool-use-stalling.py --timestamp "Your prompt here"
+```
+
+## Command Line Options
+
+The script supports the following command line options:
+
+- `--timestamp` or `-t`: Enable timestamp mode to display ISO-format timestamps for each event in the stream
+- `--model` or `-m`: Specify a different model ID (default: `us.anthropic.claude-3-7-sonnet-20250219-v1:0`)
+
+Example:
+```bash
+python bedrock-tool-use-stalling.py --timestamp --model "us.anthropic.claude-3-7-sonnet-20250219-v1:0" "Your prompt here"
 ```
 
 ## Tool Use Implementation
