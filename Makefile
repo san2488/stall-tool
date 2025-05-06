@@ -26,6 +26,9 @@ run-lorem-ipsum-1k-tool:
 run-lorem-ipsum-5k-tool:
 	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "write 5000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
 
+run-lorem-ipsum-10k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "write 10000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
 run-lorem-ipsum-5k-no-tool:
 	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "generate 5000 characters of lorem ipsum filler text. DO NOT USE any tool"
 
@@ -58,3 +61,6 @@ run-system-prompt-lorem-ipsum-1k-tool:
 
 run-system-prompt-lorem-ipsum-5k-tool:
 	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python system-prompt-tool-use.py --timestamp "write 5000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-system-prompt-lorem-ipsum-10k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python system-prompt-tool-use.py --timestamp "write 10000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
