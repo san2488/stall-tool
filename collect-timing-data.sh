@@ -42,8 +42,8 @@ run_test() {
 source .venv/bin/activate
 
 # Run Bedrock implementation tests
-run_test "bedrock" "1" "python bedrock-tool-use-stalling.py --timestamp 'write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt'"
-run_test "bedrock" "5" "python bedrock-tool-use-stalling.py --timestamp 'write 5000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt'"
+run_test "bedrock-tool-spec" "1" "python bedrock-tool-use-stalling.py --timestamp 'write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt'"
+run_test "bedrock-tool-spec" "5" "python bedrock-tool-use-stalling.py --timestamp 'write 5000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt'"
 
 # Run Anthropic implementation tests
 run_test "anthropic" "1" "python anthropic-tool-use.py --timestamp 'write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt'"
