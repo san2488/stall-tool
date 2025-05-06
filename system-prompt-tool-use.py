@@ -103,6 +103,11 @@ Usage:
         current_text = ""
         tool_use = {}
         
+        # For XML-style tool parsing
+        xml_tool_active = False
+        xml_tool_content = ""
+        xml_tool_start_time = None
+        
         # Track the assistant's response to include in the messages array
         assistant_message = {"role": "assistant", "content": []}
         current_content_block = None
@@ -135,6 +140,85 @@ Usage:
                     text_chunk = delta["text"]
                     log(text_chunk, timestamp_mode, flush=False)
                     current_text += text_chunk
+                    
+                    # Character-by-character parsing for XML tags
+                    # Process each character in the text chunk
+                    for char in text_chunk:
+                        # Add character to accumulator
+                        if not hasattr(invoke_bedrock_converse_stream, 'xml_accumulator'):
+                            invoke_bedrock_converse_stream.xml_accumulator = ""
+                        invoke_bedrock_converse_stream.xml_accumulator += char
+                        
+                        # Check for tool state and parameters
+                        if xml_tool_active:
+                            # If we're parsing a parameter
+                            if hasattr(invoke_bedrock_converse_stream, 'current_param_name') and invoke_bedrock_converse_stream.current_param_name:
+                                current_param_value = invoke_bedrock_converse_stream.xml_accumulator[invoke_bedrock_converse_stream.current_param_value_start_index:]
+                                param_closing_tag = f"</{invoke_bedrock_converse_stream.current_param_name}>"
+                                
+                                if current_param_value.endswith(param_closing_tag):
+                                    # End of parameter value
+                                    param_value = current_param_value[:-len(param_closing_tag)].strip()
+                                    if not hasattr(invoke_bedrock_converse_stream, 'tool_parameters'):
+                                        invoke_bedrock_converse_stream.tool_parameters = {}
+                                    invoke_bedrock_converse_stream.tool_parameters[invoke_bedrock_converse_stream.current_param_name] = param_value
+                                    invoke_bedrock_converse_stream.current_param_name = None
+                                    continue
+                            
+                            # Check for tool closing tag
+                            tool_closing_tag = "</fs_write>"
+                            if invoke_bedrock_converse_stream.xml_accumulator.endswith(tool_closing_tag):
+                                xml_tool_active = False
+                                
+                                # Calculate and log tool input generation time
+                                tool_end_time = time.time()
+                                tool_elapsed_time = tool_end_time - xml_tool_start_time
+                                log(f"[Tool input generation time: {tool_elapsed_time:.2f} seconds]", timestamp_mode, flush=True)
+                                
+                                # Create parameters dictionary from collected parameters
+                                parameters = {}
+                                if hasattr(invoke_bedrock_converse_stream, 'tool_parameters'):
+                                    parameters = invoke_bedrock_converse_stream.tool_parameters
+                                    # Convert insert_line to int if present
+                                    if 'insert_line' in parameters:
+                                        try:
+                                            parameters['insert_line'] = int(parameters['insert_line'].strip())
+                                        except ValueError:
+                                            log(f"[Error: insert_line is not a valid integer]", timestamp_mode)
+                                
+                                log(f"[XML Tool parameters: {json.dumps(parameters)}]", timestamp_mode, flush=True)
+                                
+                                # Execute the fs_write tool
+                                execute_fs_write(parameters, timestamp_mode)
+                                
+                                # Reset state
+                                if hasattr(invoke_bedrock_converse_stream, 'tool_parameters'):
+                                    delattr(invoke_bedrock_converse_stream, 'tool_parameters')
+                                continue
+                            
+                            # Check for parameter opening tags
+                            param_names = ['command', 'path', 'file_text', 'old_str', 'new_str', 'insert_line']
+                            for param_name in param_names:
+                                param_opening_tag = f"<{param_name}>"
+                                if invoke_bedrock_converse_stream.xml_accumulator.endswith(param_opening_tag):
+                                    invoke_bedrock_converse_stream.current_param_name = param_name
+                                    invoke_bedrock_converse_stream.current_param_value_start_index = len(invoke_bedrock_converse_stream.xml_accumulator)
+                                    break
+                        else:
+                            # Check for tool opening tag
+                            tool_opening_tag = "<fs_write>"
+                            if invoke_bedrock_converse_stream.xml_accumulator.endswith(tool_opening_tag):
+                                xml_tool_active = True
+                                xml_tool_content = ""
+                                # Start timing tool input generation
+                                xml_tool_start_time = time.time()
+                                log(f"[XML Tool Use Started: fs_write]", timestamp_mode)
+                                
+                                # Initialize tool parsing state
+                                invoke_bedrock_converse_stream.current_param_name = None
+                                if hasattr(invoke_bedrock_converse_stream, 'tool_parameters'):
+                                    delattr(invoke_bedrock_converse_stream, 'tool_parameters')
+                                invoke_bedrock_converse_stream.tool_parameters = {}
                     
                     # If this is the first text chunk, add a text block to the assistant's message
                     if not any(block.get("text", "") for block in assistant_message["content"]):

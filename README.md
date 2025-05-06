@@ -1441,3 +1441,96 @@ Notice the long delay when generating `file_text` input param
 [2025-04-29T10:43:46.637] --------------------------------------------------
 Response size: 208
 ```
+
+### Using system prompt directly
+
+```
+make run-system-prompt-lorem-ipsum-1k-tool
+rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python system-prompt-tool-use.py --timestamp "write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+Streaming response from Claude v3.7 (System Prompt):
+--------------------------------------------------
+[2025-05-06T02:19:58.936] [Message started with role: assistant]
+[2025-05-06T02:19:58.937] I
+[2025-05-06T02:19:58.937] 'll help you create a file with
+[2025-05-06T02:19:58.937]  1000 characters of lorem ipsum
+[2025-05-06T02:19:59.038]  text. Let me use the fs
+[2025-05-06T02:19:59.157] _write tool to create this
+[2025-05-06T02:19:59.337]  file:
+
+<fs_
+[2025-05-06T02:19:59.457] write>
+<command>create
+[2025-05-06T02:19:59.589] </command>
+<path>/tmp/
+[2025-05-06T02:19:59.664] lorem-ipsum.
+[2025-05-06T02:19:59.778] txt</path>
+<file_
+[2025-05-06T02:19:59.892] text>Lorem ipsum dolor sit amet,
+[2025-05-06T02:20:00.007]  consectetur adipiscing elit. Nam vel
+[2025-05-06T02:20:00.182]  nisi id lib
+[2025-05-06T02:20:00.238] ero pretium temp
+[2025-05-06T02:20:00.410] us. Suspendisse potenti
+[2025-05-06T02:20:00.469] . Ut q
+[2025-05-06T02:20:00.527] uis tristique n
+[2025-05-06T02:20:00.764] isi. Vestibulum fin
+[2025-05-06T02:20:00.838] ibus libero n
+[2025-05-06T02:20:00.902] ec augue inter
+[2025-05-06T02:20:01.028] dum, vel pharetra 
+[2025-05-06T02:20:01.096] dui rhoncus
+[2025-05-06T02:20:01.236] . Praesent fe
+[2025-05-06T02:20:01.360] ugiat dapibus ur
+[2025-05-06T02:20:01.419] na, ac plac
+[2025-05-06T02:20:01.526] erat ligula ele
+[2025-05-06T02:20:01.599] ifend nec
+[2025-05-06T02:20:01.739] . Donec eff
+[2025-05-06T02:20:01.853] icitur mauris non commodo ali
+[2025-05-06T02:20:01.968] quet. Pellentesque eget
+[2025-05-06T02:20:02.081]  tempor nulla. Proin
+[2025-05-06T02:20:02.194]  fringilla, est
+[2025-05-06T02:20:02.306]  vel eleifend pulvinar,
+[2025-05-06T02:20:02.477]  dui mi eleifend o
+[2025-05-06T02:20:02.591] dio, sit amet posuere n
+[2025-05-06T02:20:02.706] unc massa eu augue.
+[2025-05-06T02:20:02.822] 
+
+Suspendisse digniss
+[2025-05-06T02:20:02.934] im leo eget condiment
+[2025-05-06T02:20:03.047] um porta. Fusce rutrum
+[2025-05-06T02:20:03.161] , est eget rhonc
+[2025-05-06T02:20:03.274] us eleifend, eros magna
+[2025-05-06T02:20:03.388]  posuere mauris, ac
+[2025-05-06T02:20:03.503]  auctor risus neque non
+[2025-05-06T02:20:03.560]  ipsum. Fu
+[2025-05-06T02:20:03.674] sce viverra dui a odio
+[2025-05-06T02:20:03.730]  lacinia tinc
+[2025-05-06T02:20:03.784] idunt.
+[2025-05-06T02:20:03.903]  Aliquam sollicitudin v
+[2025-05-06T02:20:04.086] olutpat lectus
+[2025-05-06T02:20:04.422]  vel dignissim.
+[2025-05-06T02:20:04.763]  Nullam sollicitudin nibh
+[2025-05-06T02:20:04.806]  eros, sit amet
+[2025-05-06T02:20:04.951]  condimentum sem dign
+[2025-05-06T02:20:05.037] issim vitae
+[2025-05-06T02:20:05.193] . Nullam blandit ris
+[2025-05-06T02:20:05.389] us in risus sodales, vit
+[2025-05-06T02:20:05.504] ae laoreet mauris vehicula
+[2025-05-06T02:20:05.686] . Suspendisse condimentum
+[2025-05-06T02:20:05.846]  nibh nunc, eget con
+[2025-05-06T02:20:05.961] dimentum augue aliquet et
+[2025-05-06T02:20:06.136] .</file_text>
+</fs_
+[2025-05-06T02:20:06.310] write>
+
+I've created a file at
+[2025-05-06T02:20:06.483]  `/tmp/lorem-ipsum.txt`
+[2025-05-06T02:20:06.662]  containing 1000+ characters of lorem ipsum
+[2025-05-06T02:20:06.929]  text. The file contains standar
+[2025-05-06T02:20:07.162] d lorem ipsum placeholder text that's commonly used for
+[2025-05-06T02:20:07.393]  mockups, templates, and design
+[2025-05-06T02:20:07.627]  work when the actual content isn
+[2025-05-06T02:20:07.747] 't important.
+[Message stopped. Reason: end_turn]
+
+--------------------------------------------------
+Response size: 1398
+```
