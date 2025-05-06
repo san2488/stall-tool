@@ -1,4 +1,4 @@
-.PHONY: setup run run-hello-world run-hello-world-tool clean format install-dev run-anthropic run-anthropic-lorem-ipsum-5k-tool
+.PHONY: setup run run-hello-world run-hello-world-tool clean format install-dev run-anthropic run-anthropic-lorem-ipsum-5k-tool run-system-prompt
 
 setup:
 	uv venv
@@ -53,5 +53,8 @@ run-anthropic-hello-world:
 run-anthropic-lorem-ipsum-1k-tool:
 	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python anthropic-tool-use.py --timestamp "write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
 
-run-anthropic-lorem-ipsum-2k-tool:
-	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python anthropic-tool-use.py --timestamp "write 2000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+run-system-prompt-lorem-ipsum-1k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python system-prompt-tool-use.py --timestamp "write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-system-prompt-lorem-ipsum-5k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python system-prompt-tool-use.py --timestamp "write 5000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"

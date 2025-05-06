@@ -1,13 +1,12 @@
-# Bedrock Tool Use with Claude v3.7
+# Bedrock Tool Use Stalling with Claude v3.7
 
-This repository demonstrates the stalling of Bedrock stream when using Tools. The tool stream
-stalls exactly when generating the input to the tool. The delay is proportional to
- the size of the input
+This repository demonstrates a significant performance issue with AWS Bedrock's Claude v3.7 implementation when using tools. The project provides evidence that the Bedrock converseStream API experiences substantial stalling when generating tool inputs, particularly with large content. The delay is directly proportional to the size of the input being generated.
 
 ## Files
 
 - `bedrock-tool-use-stalling.py`: A Python script that invokes the Bedrock converseStream API with Claude v3.7 and tool use support
 - `anthropic-tool-use.py`: A Python script that invokes the Anthropic Messages API directly with Claude v3.7 and tool use support (for comparison)
+- `system-prompt-tool-use.py`: A Python script that uses system prompt to define tool use instead of the API's ToolSpec
 
 ## Demo
 Run the following tool to see the stalled delay yourself. Sample out is available below
@@ -20,6 +19,17 @@ make run-lorem-ipsum-1k-tool
 ```
 ```bash
 make run-lorem-ipsum-5k-tool
+```
+
+For comparison with the direct Anthropic API:
+```bash
+make run-anthropic-lorem-ipsum-1k-tool
+```
+
+For comparison with system prompt approach:
+```bash
+make run-system-prompt-lorem-ipsum-1k-tool
+make run-system-prompt-lorem-ipsum-5k-tool
 ```
 
 ## Setup and Usage
