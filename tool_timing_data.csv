@@ -15,3 +15,7 @@ timestamp,implementation,input_size,tool_time_seconds
 2025-05-06 03:45:58,bedrock-tool-spec,5k,38.00
 2025-05-06 03:45:58,system-prompt,1k,7.68
 2025-05-06 03:45:58,system-prompt,5k,29.73
+2025-05-06 04:04:38,bedrock-tool-spec,1k,6.19
+2025-05-06 04:04:38,bedrock-tool-spec,5k,37.50
+2025-05-06 04:04:38,system-prompt,1k,6.34
+2025-05-06 04:04:38,system-prompt,5k,41.73
