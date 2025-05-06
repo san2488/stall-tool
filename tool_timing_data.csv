@@ -1,4 +1,4 @@
-timestamp,implementation,input_size,tool_time_seconds
+timestamp,implementation,input_size,tool_time_seconds,actual_chars
 2025-05-06 03:25:16,bedrock-tool-spec,1k,10.13
 2025-05-06 03:25:16,bedrock-tool-spec,5k,46.54
 2025-05-06 03:25:16,system-prompt,1k,14.38
@@ -19,3 +19,12 @@ timestamp,implementation,input_size,tool_time_seconds
 2025-05-06 04:04:38,bedrock-tool-spec,5k,37.50
 2025-05-06 04:04:38,system-prompt,1k,6.34
 2025-05-06 04:04:38,system-prompt,5k,41.73
+2025-05-06 09:54:40,bedrock-tool-spec,10k,80.54
+2025-05-06 10:05:33,bedrock-tool-spec,10k,75.44
+2025-05-06 10:09:58,system-prompt,10k,73.22
+2025-05-06 10:11:40,system-prompt,10k,59.92
+2025-05-06 10:13:48,bedrock-tool-spec,10k,113.94
+2025-05-06 10:16:25,bedrock-tool-spec,10k,50.26,9866
+2025-05-06 10:16:25,system-prompt,10k,40.92,8058
+2025-05-06 10:23:06,bedrock-tool-spec,10k,56.98,11226
+2025-05-06 10:23:06,system-prompt,10k,108.00,9617

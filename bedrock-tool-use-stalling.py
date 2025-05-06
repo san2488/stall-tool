@@ -7,6 +7,7 @@ import sys
 import time
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 
@@ -39,7 +40,8 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
         str: The full response text
     """
     # Initialize Bedrock Runtime client
-    bedrock_runtime = boto3.client("bedrock-runtime", region_name="us-west-2")
+    config = Config(read_timeout=300)
+    bedrock_runtime = boto3.client("bedrock-runtime", region_name="us-west-2", config=config)
 
     # Define the input schema for the fs_write tool
     inputSchema = {
