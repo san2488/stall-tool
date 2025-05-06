@@ -179,6 +179,8 @@ def invoke_anthropic_messages_stream(prompt, model_id, timestamp_mode=False):
                         "input": {}
                     }
                     log(f"[Tool Use Started: {content_block['name']} (ID: {content_block['id']})]", timestamp_mode)
+                    # Start timing tool input generation
+                    tool_start_time = time.time()
                     
                     # Add the toolUse to the assistant's message
                     current_content_block = {
@@ -246,6 +248,11 @@ def invoke_anthropic_messages_stream(prompt, model_id, timestamp_mode=False):
             elif event_type == "content_block_stop":
                 log(f"[Content block stopped]", timestamp_mode)
                 if tool_use and "input" in tool_use and tool_use["input"]:
+                    # Calculate and log tool input generation time
+                    tool_end_time = time.time()
+                    tool_elapsed_time = tool_end_time - tool_start_time
+                    log(f"[Tool input generation time: {tool_elapsed_time:.2f} seconds]", timestamp_mode, flush=True)
+                    
                     # Add the complete toolUse block to the assistant's message
                     if current_content_block and current_content_block["type"] == "tool_use":
                         assistant_message["content"].append(current_content_block)

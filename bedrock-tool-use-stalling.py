@@ -120,6 +120,8 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                     tool = block_start["toolUse"]
                     tool_use = {"toolUseId": tool["toolUseId"], "name": tool["name"], "input": ""}
                     log(f"[Tool Use Started: {tool['name']} (ID: {tool['toolUseId']})]", timestamp_mode)
+                    # Start timing tool input generation
+                    tool_start_time = time.time()
                     
                     # Add the toolUse to the assistant's message
                     current_content_block = {"toolUse": {
@@ -155,6 +157,11 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
 
             elif "contentBlockStop" in event:
                 if tool_use and "input" in tool_use and tool_use["input"]:
+                    # Calculate and log tool input generation time
+                    tool_end_time = time.time()
+                    tool_elapsed_time = tool_end_time - tool_start_time
+                    log(f"[Tool input generation time: {tool_elapsed_time:.2f} seconds]", timestamp_mode, flush=True)
+                    
                     # Parse the tool input as JSON
                     try:
                         tool_use["input"] = json.loads(tool_use["input"])
