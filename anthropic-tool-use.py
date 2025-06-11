@@ -96,6 +96,7 @@ def invoke_anthropic_messages_stream(prompt, model_id, timestamp_mode=False):
             "x-api-key": api_key,
             "anthropic-version": "2023-06-01",
             "content-type": "application/json",
+            "anthropic-beta": "fine-grained-tool-streaming-2025-05-14",
             "accept": "text/event-stream"
         }
         

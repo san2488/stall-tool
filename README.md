@@ -1096,6 +1096,163 @@ I
 Response size: 376
 ```
 
+
+### Anthropic 1P (with Beta flag)
+
+Anthropic has a fix under beta: https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/fine-grained-tool-streaming
+
+```
+make run-anthropic-lorem-ipsum-2k-tool
+rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python anthropic-tool-use.py --timestamp "write 2000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+Streaming response from Claude:
+[2025-06-11T16:26:40.717] --------------------------------------------------
+[2025-06-11T16:26:40.717] API URL: https://api.anthropic.com/v1/messages
+[2025-06-11T16:26:40.717] Headers: {"anthropic-version": "2023-06-01", "content-type": "application/json", "anthropic-beta": "fine-grained-tool-streaming-2025-05-14", "accept": "text/event-stream"}
+[2025-06-11T16:26:40.717] Request data: {"model": "claude-3-7-sonnet-20250219", "messages": [{"role": "user", "content": "write 2000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"}], "tools": [{"name": "fs_write", "description": "A tool for creating and editing files\n * The `create` command will override the file at `path` if it already exists as a file, and otherwise create a new file\n * The `append` command will add content to the end of an existing file, automatically adding a newline if the file doesn't end with one. The file must exist.\n Notes for using the `str_replace` command:\n * The `old_str` parameter should match EXACTLY one or more consecutive lines from the original file. Be mindful of whitespaces!\n * If the `old_str` parameter is not unique in the file, the replacement will not be performed. Make sure to include enough context in `old_str` to make it unique\n * The `new_str` parameter should contain the edited lines that should replace the `old_str`.", "input_schema": {"type": "object", "properties": {"command": {"type": "string", "enum": ["create", "str_replace", "insert", "append"], "description": "The commands to run. Allowed options are: `create`, `str_replace`, `insert`, `append`."}, "path": {"type": "string", "description": "Absolute path to file or directory, e.g. `/repo/file.py` or `/repo`."}, "file_text": {"type": "string", "description": "Required parameter of `create` command, with the content of the file to be created."}, "old_str": {"type": "string", "description": "Required parameter of `str_replace` command containing the string in `path` to replace."}, "new_str": {"type": "string", "description": "Required parameter of `str_replace` command containing the new string. Required parameter of `insert` command containing the string to insert. Required parameter of `append` command containing the content to append to the file."}, "insert_line": {"type": "integer", "description": "Required parameter of `insert` command. The `new_str` will be inserted AFTER the line `insert_line` of `path`."}}, "required": ["command", "path"]}}], "max_tokens": 4096, "stream": true}
+[2025-06-11T16:26:41.513] [Message started with role: assistant]
+[2025-06-11T16:26:41.513] [Content block data: {"type": "text", "text": ""}]
+[2025-06-11T16:26:41.513] I'll generate
+[2025-06-11T16:26:41.575]  2000 characters
+[2025-06-11T16:26:41.673]  of lorem ipsum filler text and save it to
+[2025-06-11T16:26:41.761]  `/tmp/lorem-ipsum
+[2025-06-11T16:26:41.859] .txt`.
+[2025-06-11T16:26:42.100] [Content block stopped]
+[2025-06-11T16:26:42.100] [Content block data: {"type": "tool_use", "id": "toolu_01UUKjjMRZRmhtokrbQ1wc8x", "name": "fs_write", "input": {}}]
+[2025-06-11T16:26:42.100] [Tool Use Started: fs_write (ID: toolu_01UUKjjMRZRmhtokrbQ1wc8x)]
+[2025-06-11T16:26:42.102] [Tool input part: ]
+[2025-06-11T16:26:42.243] [Tool input part: {"command": "create]
+[2025-06-11T16:26:42.435] [Tool input part: ", "path": "/tmp/lorem-ipsum.txt]
+[2025-06-11T16:26:42.721] [Tool input part: ", "file_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ligula vest]
+---------------------------------------------------------------------
+Notice that there's NO DELAY between chunks here
+---------------------------------------------------------------------
+[2025-06-11T16:26:42.817] [Tool input part: ibulum, aliquam eros vel,]
+[2025-06-11T16:26:42.908] [Tool input part:  pretium nibh. Cras]
+[2025-06-11T16:26:43.052] [Tool input part:  sed justo et sem rhonc]
+[2025-06-11T16:26:43.181] [Tool input part: us lobortis. Ut fermentum]
+[2025-06-11T16:26:43.212] [Tool input part: , justo at dict]
+[2025-06-11T16:26:43.241] [Tool input part: um tempus]
+[2025-06-11T16:26:43.291] [Tool input part: , lorem augue fer]
+[2025-06-11T16:26:43.430] [Tool input part: mentum erat, nec ultric]
+[2025-06-11T16:26:43.479] [Tool input part: ies neque odio]
+[2025-06-11T16:26:43.526] [Tool input part:  at felis.]
+[2025-06-11T16:26:43.674] [Tool input part:  Suspendisse potenti. Fu]
+[2025-06-11T16:26:43.717] [Tool input part: sce sit amet augue]
+[2025-06-11T16:26:43.812] [Tool input part:  in eros finibus molestie.]
+[2025-06-11T16:26:43.954] [Tool input part:  Donec eu malesuada erat,]
+[2025-06-11T16:26:44.049] [Tool input part:  eu semper metus. Maec]
+[2025-06-11T16:26:44.195] [Tool input part: enas sodales diam]
+[2025-06-11T16:26:44.251] [Tool input part:  lectus, vel ult]
+[2025-06-11T16:26:44.293] [Tool input part: ricies ex interdum]
+[2025-06-11T16:26:44.382] [Tool input part:  vel. Proin in viverra lect]
+[2025-06-11T16:26:44.482] [Tool input part: us. Integer eget dapibus]
+[2025-06-11T16:26:44.525] [Tool input part:  dui. Don]
+[2025-06-11T16:26:44.655] [Tool input part: ec sit amet sem hen]
+[2025-06-11T16:26:44.739] [Tool input part: drerit, fermentum justo eu]
+[2025-06-11T16:26:44.760] [Tool input part: , sollicitudin]
+[2025-06-11T16:26:45.188] [Tool input part:  neque.]
+[2025-06-11T16:26:45.195] [Tool input part: \n\nCurabitur nec]
+[2025-06-11T16:26:45.204] [Tool input part:  diam nec lorem]
+[2025-06-11T16:26:45.207] [Tool input part:  vulputate posuere. In non pret]
+[2025-06-11T16:26:45.213] [Tool input part: ium ante. Null]
+[2025-06-11T16:26:45.215] [Tool input part: am in leo phare]
+[2025-06-11T16:26:45.218] [Tool input part: tra, feugiat]
+[2025-06-11T16:26:45.251] [Tool input part:  mi eu, volut]
+[2025-06-11T16:26:45.340] [Tool input part: pat nisl. Nulla]
+[2025-06-11T16:26:45.433] [Tool input part:  faucibus urna magna, vel dign]
+[2025-06-11T16:26:45.481] [Tool input part: issim lorem euis]
+[2025-06-11T16:26:45.529] [Tool input part: mod id. Don]
+[2025-06-11T16:26:45.575] [Tool input part: ec at ipsum feug]
+[2025-06-11T16:26:45.623] [Tool input part: iat, lacinia n]
+[2025-06-11T16:26:45.719] [Tool input part: unc eu, ultrices ar]
+[2025-06-11T16:26:45.769] [Tool input part: cu. Etiam]
+[2025-06-11T16:26:45.815] [Tool input part:  tincidunt,]
+[2025-06-11T16:26:45.910] [Tool input part:  elit et rhoncus pharetra, n]
+[2025-06-11T16:26:46.002] [Tool input part: unc magna dictum nisl, sed v]
+[2025-06-11T16:26:46.099] [Tool input part: olutpat metus lorem nec nisi]
+[2025-06-11T16:26:46.146] [Tool input part: . Etiam consequ]
+[2025-06-11T16:26:46.195] [Tool input part: at, velit n]
+[2025-06-11T16:26:46.242] [Tool input part: ec euismod temp]
+[2025-06-11T16:26:46.339] [Tool input part: us, eros risus ferment]
+[2025-06-11T16:26:46.383] [Tool input part: um nisl, et]
+[2025-06-11T16:26:46.431] [Tool input part:  feugiat massa ju]
+[2025-06-11T16:26:46.530] [Tool input part: sto et tellus. Integer]
+[2025-06-11T16:26:46.623] [Tool input part:  rhoncus justo eu]
+[2025-06-11T16:26:46.669] [Tool input part:  mauris rutrum,]
+[2025-06-11T16:26:46.773] [Tool input part:  quis suscipit n]
+[2025-06-11T16:26:46.917] [Tool input part: ulla dignissim. Cras quis]
+[2025-06-11T16:26:46.924] [Tool input part:  quam quis tor]
+[2025-06-11T16:26:47.003] [Tool input part: tor aliquam bibendum ut]
+[2025-06-11T16:26:47.098] [Tool input part:  a magna. Phasellus]
+[2025-06-11T16:26:47.193] [Tool input part:  luctus elementum viverra.]
+[2025-06-11T16:26:47.242] [Tool input part:  Donec sed nib]
+[2025-06-11T16:26:47.288] [Tool input part: h non nulla con]
+[2025-06-11T16:26:47.383] [Tool input part: vallis molestie eget et arcu]
+[2025-06-11T16:26:47.433] [Tool input part: .\n\nMauris]
+[2025-06-11T16:26:47.479] [Tool input part:  id quam nec]
+[2025-06-11T16:26:47.527] [Tool input part:  magna cursus bibendum]
+[2025-06-11T16:26:47.623] [Tool input part:  vel a nibh. Donec]
+[2025-06-11T16:26:47.717] [Tool input part:  venenatis ornare ultr]
+[2025-06-11T16:26:47.767] [Tool input part: ices. Nullam]
+[2025-06-11T16:26:47.811] [Tool input part:  nec odio n]
+[2025-06-11T16:26:47.859] [Tool input part: ec odio vulput]
+[2025-06-11T16:26:47.907] [Tool input part: ate commodo.]
+[2025-06-11T16:26:47.957] [Tool input part:  Suspendisse potenti]
+[2025-06-11T16:26:48.002] [Tool input part: . Vivamus ]
+[2025-06-11T16:26:48.108] [Tool input part: dapibus in tellus et]
+[2025-06-11T16:26:48.145] [Tool input part:  luctus.]
+[2025-06-11T16:26:48.192] [Tool input part:  Nulla facilisi.]
+[2025-06-11T16:26:48.245] [Tool input part:  Cras laor]
+[2025-06-11T16:26:48.288] [Tool input part: eet enim a temp]
+[2025-06-11T16:26:48.336] [Tool input part: or suscipit.]
+[2025-06-11T16:26:48.383] [Tool input part:  Cras pulv]
+[2025-06-11T16:26:48.479] [Tool input part: inar mauris purus, a dignissim]
+[2025-06-11T16:26:48.526] [Tool input part:  turpis effici]
+[2025-06-11T16:26:48.621] [Tool input part: tur vel. Donec eget tempus]
+[2025-06-11T16:26:48.669] [Tool input part:  nisl, nec]
+[2025-06-11T16:26:48.764] [Tool input part:  tempus eros. N]
+[2025-06-11T16:26:48.860] [Tool input part: ulla scelerisque ju]
+[2025-06-11T16:26:48.955] [Tool input part: sto sed pellentesque sagittis]
+[2025-06-11T16:26:49.051] [Tool input part: . In rutrum tempor maur]
+[2025-06-11T16:26:49.098] [Tool input part: is, sed semper]
+[2025-06-11T16:26:49.145] [Tool input part:  neque hendrerit]
+[2025-06-11T16:26:49.200] [Tool input part:  at. Etiam]
+[2025-06-11T16:26:49.288] [Tool input part:  egestas, lorem eget]
+[2025-06-11T16:26:49.336] [Tool input part:  egestas digniss]
+[2025-06-11T16:26:49.383] [Tool input part: im, leo ligula]
+[2025-06-11T16:26:49.479] [Tool input part:  vulputate sem, non]
+[2025-06-11T16:26:49.529] [Tool input part:  tincidunt ju]
+[2025-06-11T16:26:49.579] [Tool input part: sto sapien sed tor]
+[2025-06-11T16:26:49.621] [Tool input part: tor. Nunc]
+[2025-06-11T16:26:49.669] [Tool input part:  eget auctor ipsum]
+[2025-06-11T16:26:49.779] [Tool input part: , vel eleifend est.]
+[2025-06-11T16:26:49.860] [Tool input part:  Aenean mol]
+[2025-06-11T16:26:49.954] [Tool input part: estie magna non magna]
+[2025-06-11T16:26:50.002] [Tool input part:  vulputate, et]
+[2025-06-11T16:26:50.053] [Tool input part:  varius est rhonc]
+[2025-06-11T16:26:50.146] [Tool input part: us. Aenean vul]
+[2025-06-11T16:26:50.240] [Tool input part: putate, enim]
+[2025-06-11T16:26:50.338] [Tool input part:  sit amet tempus elementum, felis ju]
+[2025-06-11T16:26:50.383] [Tool input part: sto imperdiet ve]
+[2025-06-11T16:26:50.433] [Tool input part: lit, vitae hen]
+[2025-06-11T16:26:50.527] [Tool input part: drerit ipsum magna ut]
+[2025-06-11T16:26:50.668] [Tool input part:  nunc.]
+[2025-06-11T16:26:50.867] [Tool input part: "}]
+[2025-06-11T16:26:50.868] [Complete tool input: {"command": "create", "path": "/tmp/lorem-ipsum.txt", "file_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ligula vestibulum, aliquam eros vel, pretium nibh. Cras sed justo et sem rhoncus lobortis. Ut fermentum, justo at dictum tempus, lorem augue fermentum erat, nec ultricies neque odio at felis. Suspendisse potenti. Fusce sit amet augue in eros finibus molestie. Donec eu malesuada erat, eu semper metus. Maecenas sodales diam lectus, vel ultricies ex interdum vel. Proin in viverra lectus. Integer eget dapibus dui. Donec sit amet sem hendrerit, fermentum justo eu, sollicitudin neque.\n\nCurabitur nec diam nec lorem vulputate posuere. In non pretium ante. Nullam in leo pharetra, feugiat mi eu, volutpat nisl. Nulla faucibus urna magna, vel dignissim lorem euismod id. Donec at ipsum feugiat, lacinia nunc eu, ultrices arcu. Etiam tincidunt, elit et rhoncus pharetra, nunc magna dictum nisl, sed volutpat metus lorem nec nisi. Etiam consequat, velit nec euismod tempus, eros risus fermentum nisl, et feugiat massa justo et tellus. Integer rhoncus justo eu mauris rutrum, quis suscipit nulla dignissim. Cras quis quam quis tortor aliquam bibendum ut a magna. Phasellus luctus elementum viverra. Donec sed nibh non nulla convallis molestie eget et arcu.\n\nMauris id quam nec magna cursus bibendum vel a nibh. Donec venenatis ornare ultrices. Nullam nec odio nec odio vulputate commodo. Suspendisse potenti. Vivamus dapibus in tellus et luctus. Nulla facilisi. Cras laoreet enim a tempor suscipit. Cras pulvinar mauris purus, a dignissim turpis efficitur vel. Donec eget tempus nisl, nec tempus eros. Nulla scelerisque justo sed pellentesque sagittis. In rutrum tempor mauris, sed semper neque hendrerit at. Etiam egestas, lorem eget egestas dignissim, leo ligula vulputate sem, non tincidunt justo sapien sed tortor. Nunc eget auctor ipsum, vel eleifend est. Aenean molestie magna non magna vulputate, et varius est rhoncus. Aenean vulputate, enim sit amet tempus elementum, felis justo imperdiet velit, vitae hendrerit ipsum magna ut nunc."}]
+[2025-06-11T16:26:50.871] [Content block stopped]
+[2025-06-11T16:26:50.871] [Tool input generation time: 8.77 seconds]
+[2025-06-11T16:26:50.871] [Tool parameters: {"command": "create", "path": "/tmp/lorem-ipsum.txt", "file_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ligula vestibulum, aliquam eros vel, pretium nibh. Cras sed justo et sem rhoncus lobortis. Ut fermentum, justo at dictum tempus, lorem augue fermentum erat, nec ultricies neque odio at felis. Suspendisse potenti. Fusce sit amet augue in eros finibus molestie. Donec eu malesuada erat, eu semper metus. Maecenas sodales diam lectus, vel ultricies ex interdum vel. Proin in viverra lectus. Integer eget dapibus dui. Donec sit amet sem hendrerit, fermentum justo eu, sollicitudin neque.\n\nCurabitur nec diam nec lorem vulputate posuere. In non pretium ante. Nullam in leo pharetra, feugiat mi eu, volutpat nisl. Nulla faucibus urna magna, vel dignissim lorem euismod id. Donec at ipsum feugiat, lacinia nunc eu, ultrices arcu. Etiam tincidunt, elit et rhoncus pharetra, nunc magna dictum nisl, sed volutpat metus lorem nec nisi. Etiam consequat, velit nec euismod tempus, eros risus fermentum nisl, et feugiat massa justo et tellus. Integer rhoncus justo eu mauris rutrum, quis suscipit nulla dignissim. Cras quis quam quis tortor aliquam bibendum ut a magna. Phasellus luctus elementum viverra. Donec sed nibh non nulla convallis molestie eget et arcu.\n\nMauris id quam nec magna cursus bibendum vel a nibh. Donec venenatis ornare ultrices. Nullam nec odio nec odio vulputate commodo. Suspendisse potenti. Vivamus dapibus in tellus et luctus. Nulla facilisi. Cras laoreet enim a tempor suscipit. Cras pulvinar mauris purus, a dignissim turpis efficitur vel. Donec eget tempus nisl, nec tempus eros. Nulla scelerisque justo sed pellentesque sagittis. In rutrum tempor mauris, sed semper neque hendrerit at. Etiam egestas, lorem eget egestas dignissim, leo ligula vulputate sem, non tincidunt justo sapien sed tortor. Nunc eget auctor ipsum, vel eleifend est. Aenean molestie magna non magna vulputate, et varius est rhoncus. Aenean vulputate, enim sit amet tempus elementum, felis justo imperdiet velit, vitae hendrerit ipsum magna ut nunc."}]
+[Tool Result: File created at /tmp/lorem-ipsum.txt]
+[2025-06-11T16:26:50.875] [Sending tool result back to the model...]
+[2025-06-11T16:26:52.616] [Message delta with stop_reason: tool_use]
+[2025-06-11T16:26:52.616] [Message stopped]
+[2025-06-11T16:26:52.616] --------------------------------------------------
+Response size: 190
+```
+
+
+
+
 ### Anthropic 1P
 
 ```

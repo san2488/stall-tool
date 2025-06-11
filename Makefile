@@ -56,6 +56,9 @@ run-anthropic-hello-world:
 run-anthropic-lorem-ipsum-1k-tool:
 	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python anthropic-tool-use.py --timestamp "write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
 
+run-anthropic-lorem-ipsum-2k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python anthropic-tool-use.py --timestamp "write 2000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
 run-system-prompt-lorem-ipsum-1k-tool:
 	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python system-prompt-tool-use.py --timestamp "write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
 
