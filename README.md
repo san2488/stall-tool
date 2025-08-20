@@ -7,6 +7,33 @@ This repository demonstrates a significant performance issue with AWS Bedrock's 
 - `bedrock-tool-use-stalling.py`: A Python script that invokes the Bedrock converseStream API with Claude v3.7 and tool use support
 - `anthropic-tool-use.py`: A Python script that invokes the Anthropic Messages API directly with Claude v3.7 and tool use support (for comparison)
 - `system-prompt-tool-use.py`: A Python script that uses system prompt to define tool use instead of the API's ToolSpec
+- `nova-tool-use-stalling.py`: A Python script that invokes the Bedrock converseStream API with Nova Premier and tool use support
+
+## Nova Premier Reasoning Content
+
+Nova Premier models embed reasoning content directly in the text stream using `<thinking>` tags. This differs from the AWS Bedrock API specification, which defines a separate `reasoningContent` field in `ContentBlockDelta` events.
+
+According to the [AWS Nova tool use documentation](https://docs.aws.amazon.com/nova/latest/userguide/tool-use-invocation.html):
+
+> To improve the accuracy of tool calls, the default behavior of Amazon Nova models is to use chain-of-thought reasoning for tool calling. The thought process will be made available to you in the assistant message and will be contained in <thinking> tags.
+
+The documentation further explains in the [tool calling systems guide](https://docs.aws.amazon.com/nova/latest/userguide/prompting-tools-function.html):
+
+> When tools are used with Amazon Bedrock, Amazon Nova prompts include additional directives to use Chain-of-Thought (CoT) to improve the planning and accuracy of function calling. This directive includes the use of a <thinking> section preceding the tool call. This section is parsed by Amazon Nova models and passed to Amazon Bedrock as a tool call response.
+
+**Observed behavior:**
+- Reasoning content appears in the `text` field of streaming responses
+- Content is wrapped in `<thinking>...</thinking>` tags
+- No content appears in the `reasoningContent` field
+
+**Other models:**
+- Claude, Llama, and other foundation models do not use `<thinking>` tags
+- These models do not embed reasoning content in text streams
+
+The `nova-tool-use-stalling.py` script shows this behavior by labeling content blocks:
+- `[text]` - Text content including `<thinking>` tags
+- `[reasoning]` - Dedicated reasoning content (unused by Nova Premier)
+- `[tool]` - Tool use input content
 
 ## Demo
 Run the following tool to see the stalled delay yourself. Sample out is available below
@@ -30,6 +57,13 @@ For comparison with system prompt approach:
 ```bash
 make run-system-prompt-lorem-ipsum-1k-tool
 make run-system-prompt-lorem-ipsum-5k-tool
+```
+
+For Nova Premier reasoning content analysis:
+```bash
+make run-nova-hello-world
+make run-nova-lorem-ipsum-1k-tool
+make run-nova-lorem-ipsum-5k-tool
 ```
 
 ## Setup and Usage

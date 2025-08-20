@@ -1,0 +1,8 @@
+Error invoking Bedrock: An error occurred (ExpiredTokenException) when calling the ConverseStream operation: The security token included in the request is expired
+Traceback (most recent call last):
+  File "/Users/narsale/workspaces/github/BedrockToolUseStalling/nova-tool-use-stalling.py", line 403, in <module>
+    main()
+  File "/Users/narsale/workspaces/github/BedrockToolUseStalling/nova-tool-use-stalling.py", line 399, in main
+    print(f"Response size: {len(response)}")
+                            ^^^^^^^^^^^^^
+TypeError: object of type 'NoneType' has no len()

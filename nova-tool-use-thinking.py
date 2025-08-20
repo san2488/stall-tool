@@ -138,7 +138,7 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                 delta = event["contentBlockDelta"]["delta"]
                 if "text" in delta:
                     text_chunk = delta["text"]
-                    log(text_chunk, timestamp_mode, flush=False)
+                    log(f"[text] {text_chunk}", timestamp_mode, flush=True)
                     current_text += text_chunk
                     
                     # If this is the first text chunk, add a text block to the assistant's message
@@ -151,9 +151,14 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                                 block["text"] += text_chunk
                                 break
                                 
+                elif "reasoningContent" in delta:
+                    reasoning_chunk = delta["reasoningContent"]
+                    log(f"[reasoning] {reasoning_chunk}", timestamp_mode, flush=True)
+                    # Note: reasoning content is typically not included in the assistant message for tool calls
+                    
                 elif "toolUse" in delta and "input" in delta["toolUse"]:
                     tool_use["input"] += delta["toolUse"]["input"]
-                    log(f"[Tool input: {delta['toolUse']['input']}] ", timestamp_mode, flush=True)
+                    log(f"[tool] {delta['toolUse']['input']}", timestamp_mode, flush=True)
                     
                     # Update the toolUse in the assistant's message
                     if current_content_block and "toolUse" in current_content_block:
@@ -235,7 +240,7 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                                         continue_delta = continue_event["contentBlockDelta"]["delta"]
                                         if "text" in continue_delta:
                                             continue_text = continue_delta["text"]
-                                            log(continue_text, timestamp_mode, flush=True)
+                                            log(f"[text] {continue_text}", timestamp_mode, flush=True)
                                             full_response += continue_text
                             except ClientError as e:
                                 log(f"\nError invoking Bedrock: {e}")
