@@ -1,4 +1,4 @@
-.PHONY: setup run run-hello-world run-hello-world-tool clean format install-dev run-anthropic run-anthropic-lorem-ipsum-5k-tool run-system-prompt
+.PHONY: setup run run-hello-world run-hello-world-tool clean format install-dev run-anthropic run-anthropic-lorem-ipsum-5k-tool run-system-prompt run-nova-hello-world run-nova-lorem-ipsum-1k-tool run-nova-lorem-ipsum-5k-tool
 
 setup:
 	uv venv
@@ -31,6 +31,15 @@ run-lorem-ipsum-10k-tool:
 
 run-lorem-ipsum-5k-no-tool:
 	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --timestamp "generate 5000 characters of lorem ipsum filler text. DO NOT USE any tool"
+
+run-sonnet4-hello-world:
+	source .venv/bin/activate && python bedrock-tool-use-stalling.py --model "us.anthropic.claude-sonnet-4-20250514-v1:0" --timestamp "hello world"
+
+run-sonnet4-lorem-ipsum-5k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python bedrock-tool-use-stalling.py --model "us.anthropic.claude-sonnet-4-20250514-v1:0" --timestamp "write 500 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-sonnet4-fibonacci-tool:
+	rm -f ./generate-fibonacci.py && source .venv/bin/activate && python bedrock-tool-use-stalling.py --model "us.anthropic.claude-sonnet-4-20250514-v1:0" --timestamp "write a concise program to generate fibonacci numbers into ./generate-fibonacci.py file"
 
 clean:
 	rm -rf .venv
@@ -67,3 +76,12 @@ run-system-prompt-lorem-ipsum-5k-tool:
 
 run-system-prompt-lorem-ipsum-10k-tool:
 	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python system-prompt-tool-use.py --timestamp "write 10000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-nova-hello-world:
+	source .venv/bin/activate && python nova-tool-use-stalling.py --timestamp "hello world"
+
+run-nova-lorem-ipsum-1k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python nova-tool-use-stalling.py --timestamp "write 1000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
+
+run-nova-lorem-ipsum-5k-tool:
+	rm -f /tmp/lorem-ipsum.txt && source .venv/bin/activate && python nova-tool-use-stalling.py --timestamp "write 5000 characters of lorem ipsum filler text to /tmp/lorem-ipsum.txt"
