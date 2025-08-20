@@ -35,6 +35,8 @@ The `nova-tool-use-stalling.py` script shows this behavior by labeling content b
 - `[reasoning]` - Dedicated reasoning content (unused by Nova Premier)
 - `[tool]` - Tool use input content
 
+See `nova_output.txt` for example output demonstrating this behavior.
+
 ## Demo
 Run the following tool to see the stalled delay yourself. Sample out is available below
 

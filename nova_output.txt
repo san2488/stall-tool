@@ -1,8 +1,213 @@
-Error invoking Bedrock: An error occurred (ExpiredTokenException) when calling the ConverseStream operation: The security token included in the request is expired
-Traceback (most recent call last):
-  File "/Users/narsale/workspaces/github/BedrockToolUseStalling/nova-tool-use-stalling.py", line 403, in <module>
-    main()
-  File "/Users/narsale/workspaces/github/BedrockToolUseStalling/nova-tool-use-stalling.py", line 399, in main
-    print(f"Response size: {len(response)}")
-                            ^^^^^^^^^^^^^
-TypeError: object of type 'NoneType' has no len()
+Streaming response from Nova Premier (us.amazon.nova-premier-v1:0):
+--------------------------------------------------
+[Message started with role: assistant]
+[text] <thinking
+[text] >
+[text] The
+[text]  user
+[text]  has
+[text]  provided
+[text]  a
+[text]  simple
+[text]  "
+[text] hello
+[text]  world
+[text] "
+[text]  input
+[text] .
+[text]  Since
+[text]  this
+[text]  is
+[text]  a
+[text]  basic
+[text]  programming
+[text]  phrase
+[text]  that
+[text]  typically
+[text]  represents
+[text]  creating
+[text]  a
+[text]  minimal
+[text]  working
+[text]  program
+[text] ,
+[text]  I
+[text] '
+[text] ll
+[text]  respond
+[text]  by
+[text]  creating
+[text]  a
+[text]  standard
+[text]  hello
+[text]  world
+[text]  program
+[text]  in
+[text]  Python
+[text] .
+[text]  The
+[text]  user
+[text]  hasn
+[text] '
+[text] t
+[text]  specified
+[text]  a
+[text]  language
+[text] ,
+[text]  but
+[text]  Python
+[text]  is
+[text]  common
+[text]  for
+[text]  such
+[text]  examples
+[text] .
+[text]  I
+[text] '
+[text] ll
+[text]  use
+[text]  the
+[text]  f
+[text] s
+[text] _
+[text] write
+[text]  tool
+[text]  to
+[text]  create
+[text]  a
+[text]  file
+[text]  named
+[text]  hello
+[text] .
+[text] py
+[text]  in
+[text]  the
+[text]  root
+[text]  directory
+[text]  with
+[text]  the
+[text]  appropriate
+[text]  print
+[text]  statement
+[text] .</
+[text] thinking
+[text] >
+[text] 
+
+[text] 
+
+[Tool Use Started: fs_write (ID: tooluse_b2Kz3IlMQMCca-igFzgE-w)]
+[tool] {"path":"/repo/hello.py","file_text":"print('Hello, world!')","command":"create"}
+[Tool input generation time: 0.00 seconds]
+[Tool parameters: {"path": "/repo/hello.py", "file_text": "print('Hello, world!')", "command": "create"}]
+[Tool Error: [Errno 30] Read-only file system: '/repo']
+[Sending tool result back to the model...]
+[text] <thinking
+[text] >
+[text] The
+[text]  previous
+[text]  attempt
+[text]  to
+[text]  create
+[text]  hello
+[text] .
+[text] py
+[text]  in
+[text]  the
+[text]  root
+[text]  directory
+[text]  failed
+[text] .
+[text]  This
+[text]  suggests
+[text]  the
+[text]  root
+[text]  directory
+[text]  might
+[text]  have
+[text]  restricted
+[text]  permissions
+[text]  or
+[text]  the
+[text]  user
+[text]  wants
+[text]  the
+[text]  file
+[text]  in
+[text]  the
+[text]  current
+[text]  working
+[text]  directory
+[text] .
+[text]  Since
+[text]  the
+[text]  problem
+[text]  statement
+[text]  doesn
+[text] '
+[text] t
+[text]  specify
+[text]  a
+[text]  path
+[text] ,
+[text]  I
+[text] '
+[text] ll
+[text]  retry
+[text]  creating
+[text]  the
+[text]  file
+[text]  in
+[text]  the
+[text]  default
+[text]  /
+[text] repo
+[text]  directory
+[text]  that
+[text] '
+[text] s
+[text]  typically
+[text]  
+[text] writable
+[text]  in
+[text]  these
+[text]  environments
+[text] .
+[text]  The
+[text]  error
+[text]  might
+[text]  have
+[text]  been
+[text]  transient
+[text]  or
+[text]  related
+[text]  to
+[text]  path
+[text]  handling
+[text] .
+[text]  Using
+[text]  the
+[text]  same
+[text]  filename
+[text]  and
+[text]  content
+[text]  but
+[text]  ensuring
+[text]  we
+[text] '
+[text] re
+[text]  in
+[text]  a
+[text]  standard
+[text]  location
+[text] .</
+[text] thinking
+[text] >
+[text] 
+
+[text] 
+
+[Message stopped. Reason: tool_use]
+
+--------------------------------------------------
+Response size: 966
