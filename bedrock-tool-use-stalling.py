@@ -30,18 +30,19 @@ def log(message, timestamp_mode=False, end="\n", flush=False):
 
 def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
     """
-    Invokes the Bedrock converseStream API with Claude v3.7 model with tool use support.
+    Invokes the Bedrock converseStream API with Claude model with tool use support.
 
     Args:
         prompt (str): The user prompt to send to the model
-        model_id (str): The model ID to usetimestamp_mode (bool): Whether to print timestamps for each event
+        model_id (str): The model ID to use
+        timestamp_mode (bool): Whether to print timestamps for each event
 
     Returns:
         str: The full response text
     """
     # Initialize Bedrock Runtime client
     config = Config(read_timeout=300)
-    bedrock_runtime = boto3.client("bedrock-runtime", region_name="us-west-2", config=config)
+    bedrock_runtime = boto3.client("bedrock-runtime", region_name="us-east-1", config=config)
 
     # Define the input schema for the fs_write tool
     inputSchema = {
@@ -93,13 +94,16 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
             "modelId": model_id,
             "messages": messages,
             "toolConfig": {"tools": [fs_write_tool]},
+            "additionalModelRequestFields": {
+                "anthropic_beta": ["fine-grained-tool-streaming-2025-05-14"]
+            }
         }
 
         # Call the converseStream API
         response = bedrock_runtime.converse_stream(**api_params)
 
         # Process the streaming response
-        print("Streaming response from Claude v3.7:")
+        print(f"Streaming response from Claude ({model_id}):")
         print("-" * 50)
 
         full_response = ""
@@ -218,6 +222,9 @@ def invoke_bedrock_converse_stream(prompt, model_id, timestamp_mode=False):
                                     modelId=model_id,
                                     messages=tool_messages,
                                     toolConfig={"tools": [fs_write_tool]},
+                                    additionalModelRequestFields={
+                                        "anthropic_beta": ["fine-grained-tool-streaming-2025-05-14"]
+                                    }
                                 )
 
                                 # Process the continued response
@@ -370,7 +377,7 @@ def main():
     Main function to parse arguments and invoke the Bedrock converseStream API.
     """
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Invoke Bedrock converseStream API with Claude v3.7")
+    parser = argparse.ArgumentParser(description="Invoke Bedrock converseStream API with Claude")
     parser.add_argument("prompt", nargs="*", help="Prompt to send to the model")
     parser.add_argument("--timestamp", "-t", action="store_true", help="Enable timestamp mode")
     parser.add_argument("--model", "-m", default="us.anthropic.claude-3-7-sonnet-20250219-v1:0", 
@@ -384,7 +391,7 @@ def main():
         prompt = " ".join(args.prompt)
     else:
         # Otherwise, ask for input
-        prompt = input("Enter your prompt for Claude v3.7: ")
+        prompt = input("Enter your prompt for Claude: ")
 
     # Invoke the API with the specified options
     response = invoke_bedrock_converse_stream(prompt, model_id=args.model, timestamp_mode=args.timestamp)
