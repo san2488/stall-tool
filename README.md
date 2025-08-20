@@ -37,6 +37,55 @@ The `nova-tool-use-stalling.py` script shows this behavior by labeling content b
 
 See `nova_output.txt` for example output demonstrating this behavior.
 
+### AWS CLI Example
+
+You can also observe this behavior directly using the AWS CLI:
+
+```bash
+aws bedrock-runtime converse \
+  --region us-east-1 \
+  --model-id "us.amazon.nova-premier-v1:0" \
+  --messages '[{"role":"user","content":[{"text":"write hello world to a file"}]}]' \
+  --tool-config '{"tools":[{"toolSpec":{"name":"write_file","description":"Write content to a file","inputSchema":{"json":{"type":"object","properties":{"filename":{"type":"string"},"content":{"type":"string"}},"required":["filename","content"]}}}}]}' \
+  --inference-config '{"maxTokens":1000}' > nova_cli_output.json
+```
+
+The resulting JSON will show `<thinking>` tags embedded in the text content of the assistant message.
+
+```json
+{
+    "output": {
+        "message": {
+            "role": "assistant",
+            "content": [
+                {
+                    "text": "<thinking>The user wants to write \"hello world\" to a file. I have a `write_file` tool available that can handle this task. The required parameters are `filename` and `content`. The user hasn't specified a filename, but I can use a default like \"hello.txt\" since that's a common practice for simple examples. The content is clearly stated as \"hello world\". I'll proceed to create the file with these parameters.</thinking>\n\n"
+                },
+                {
+                    "toolUse": {
+                        "toolUseId": "tooluse_ZNGWFV4HTB21Ojt60i7pGA",
+                        "name": "write_file",
+                        "input": {
+                            "filename": "hello.txt",
+                            "content": "hello world"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "stopReason": "tool_use",
+    "usage": {
+        "inputTokens": 688,
+        "outputTokens": 124,
+        "totalTokens": 812
+    },
+    "metrics": {
+        "latencyMs": 4280
+    }
+}
+```
+
 ## Demo
 Run the following tool to see the stalled delay yourself. Sample out is available below
 
