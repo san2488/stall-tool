@@ -15,8 +15,10 @@ from benchmark.mock_tools import MockToolExecutor
 class BedrockTaskExecutor(TaskExecutor):
     """Bedrock-specific task executor."""
     
+    MODEL_ID = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+    
     def __init__(self, api_client, mock_tool_executor, benchmark_runner):
-        super().__init__(api_client, mock_tool_executor, benchmark_runner)
+        super().__init__(api_client, mock_tool_executor, benchmark_runner, self.MODEL_ID)
         self.current_assistant_content = []
     
     def _execute_api_call(self, task_def: dict):
@@ -70,7 +72,7 @@ class BedrockTaskExecutor(TaskExecutor):
         
         # Make streaming request
         response = self.api_client.converse_stream(
-            modelId="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+            modelId=self.MODEL_ID,
             messages=bedrock_messages,
             toolConfig={"tools": tools},
             inferenceConfig={"maxTokens": 4096}
@@ -164,10 +166,19 @@ class BedrockTaskExecutor(TaskExecutor):
     
     def _add_tool_results_to_conversation(self, tool_results):
         """Add tool results to conversation in Bedrock format."""
-        # Bedrock expects tool results in user message
+        # Bedrock expects tool results in user message with specific format
+        content = []
+        for result in tool_results:
+            content.append({
+                "toolResult": {
+                    "toolUseId": result['tool_use_id'],
+                    "content": [{"text": result['content']}]
+                }
+            })
+        
         self.messages.append({
             "role": "user",
-            "content": tool_results
+            "content": content
         })
 
 

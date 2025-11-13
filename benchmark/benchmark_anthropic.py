@@ -17,10 +17,12 @@ from benchmark.mock_tools import MockToolExecutor
 class AnthropicTaskExecutor(TaskExecutor):
     """Anthropic-specific task executor."""
     
+    MODEL_ID = "claude-3-7-sonnet-20250219"
+    
     def __init__(self, api_key, mock_tool_executor, benchmark_runner):
         # Create a simple client wrapper
         self.api_key = api_key
-        super().__init__(None, mock_tool_executor, benchmark_runner)
+        super().__init__(None, mock_tool_executor, benchmark_runner, self.MODEL_ID)
         self.current_assistant_content = []
     
     def _execute_api_call(self, task_def: dict):
@@ -62,7 +64,7 @@ class AnthropicTaskExecutor(TaskExecutor):
         }]
         
         payload = {
-            "model": "claude-3-7-sonnet-20250219",
+            "model": self.MODEL_ID,
             "messages": self.messages,
             "tools": tools,
             "max_tokens": 4096,

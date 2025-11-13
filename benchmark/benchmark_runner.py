@@ -26,6 +26,7 @@ class BenchmarkRunner:
             writer.writerow([
                 'timestamp',
                 'api_type',
+                'model_id',
                 'task_id',
                 'task_type',
                 'first_token_ms',
@@ -40,6 +41,7 @@ class BenchmarkRunner:
                      first_token_ms: float, stream_complete_ms: float,
                      total_task_ms: float, tool_calls_count: int,
                      turns_count: int = 1,
+                     model_id: str = "unknown",
                      status: str = "success"):
         """Record a benchmark result to CSV."""
         with open(self.output_file, 'a', newline='') as f:
@@ -47,6 +49,7 @@ class BenchmarkRunner:
             writer.writerow([
                 datetime.now().isoformat(),
                 self.api_type,
+                model_id,
                 task_id,
                 task_type,
                 f"{first_token_ms:.2f}",
@@ -61,10 +64,11 @@ class BenchmarkRunner:
 class TaskExecutor:
     """Executes benchmark tasks and measures timing."""
     
-    def __init__(self, api_client, mock_tool_executor, benchmark_runner):
+    def __init__(self, api_client, mock_tool_executor, benchmark_runner, model_id: str = "unknown"):
         self.api_client = api_client
         self.mock_tools = mock_tool_executor
         self.runner = benchmark_runner
+        self.model_id = model_id
         
         # Timing state
         self.start_time = None
@@ -130,6 +134,7 @@ class TaskExecutor:
                 total_task_ms=total_task_ms,
                 tool_calls_count=self.tool_calls_count,
                 turns_count=self.turns_count,
+                model_id=self.model_id,
                 status="success"
             )
             
@@ -152,6 +157,7 @@ class TaskExecutor:
                 total_task_ms=total_task_ms,
                 tool_calls_count=self.tool_calls_count,
                 turns_count=self.turns_count,
+                model_id=self.model_id,
                 status=f"error: {str(e)}"
             )
             return {"status": "error", "message": str(e)}
