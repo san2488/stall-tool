@@ -103,7 +103,6 @@ class BedrockTaskExecutor(TaskExecutor):
             if 'toolUse' in block:
                 tool_name = block['toolUse'].get('name', 'unknown')
                 tool_id = block['toolUse'].get('toolUseId', 'unknown')
-                print(f"[TOOL CALL #{self.tool_calls_count + 1}] {tool_name} (ID: {tool_id})")
                 self.tool_calls_count += 1
                 self._mark_first_token()
                 
@@ -159,7 +158,6 @@ class BedrockTaskExecutor(TaskExecutor):
         
         elif 'messageStop' in event:
             self.stop_reason = event['messageStop'].get('stopReason', 'unknown')
-            print(f"[MESSAGE STOPPED] Reason: {self.stop_reason}")
         
         elif 'metadata' in event:
             pass
