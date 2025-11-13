@@ -17,7 +17,7 @@ from benchmark.mock_tools import MockToolExecutor
 class AnthropicTaskExecutor(TaskExecutor):
     """Anthropic-specific task executor."""
     
-    MODEL_ID = "claude-3-7-sonnet-20250219"
+    MODEL_ID = "claude-sonnet-4-5-20250929"
     
     def __init__(self, api_key, mock_tool_executor, benchmark_runner):
         # Create a simple client wrapper
