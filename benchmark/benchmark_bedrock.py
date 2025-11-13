@@ -15,7 +15,7 @@ from benchmark.mock_tools import MockToolExecutor
 class BedrockTaskExecutor(TaskExecutor):
     """Bedrock-specific task executor."""
     
-    MODEL_ID = "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+    MODEL_ID = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
     
     def __init__(self, api_client, mock_tool_executor, benchmark_runner):
         super().__init__(api_client, mock_tool_executor, benchmark_runner, self.MODEL_ID)
