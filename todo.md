@@ -141,9 +141,9 @@ Each section is independent and can be completed/tested separately.
 **Goal**: Verify analysis scripts work with collected benchmark data
 
 ### Tasks
-- [ ] Run both Bedrock and Anthropic benchmarks with multiple runs (5+)
-- [ ] Test `analyze_results.py` on collected data
-- [ ] Verify comparison report generation
-- [ ] Verify summary statistics are correct
+- [x] Run both Bedrock and Anthropic benchmarks with multiple runs (5+)
+- [x] Test `analyze_results.py` on collected data
+- [x] Verify comparison report generation
+- [x] Verify summary statistics are correct
 - [ ] Test with edge cases (errors, missing data)
 - [ ] Update analysis script if needed for new CSV columns (model_id, turns_count)
