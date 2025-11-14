@@ -74,13 +74,13 @@ def test_anthropic_latency():
     return None
 
 if __name__ == '__main__':
-    print("Running simple latency tests (3 runs each)...\n")
+    print("Running simple latency tests (15 runs each)...\n")
     
     bedrock_latencies = []
     anthropic_latencies = []
     
-    for i in range(3):
-        print(f"Run {i+1}/3:")
+    for i in range(15):
+        print(f"Run {i+1}/15:")
         
         bl = test_bedrock_latency()
         if bl:
