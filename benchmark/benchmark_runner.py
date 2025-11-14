@@ -32,6 +32,7 @@ class BenchmarkRunner:
                 'first_token_ms',
                 'stream_complete_ms',
                 'total_task_ms',
+                'max_turn_ms',
                 'tool_calls_count',
                 'turns_count',
                 'status'
@@ -39,7 +40,8 @@ class BenchmarkRunner:
     
     def record_result(self, task_id: str, task_type: str, 
                      first_token_ms: float, stream_complete_ms: float,
-                     total_task_ms: float, tool_calls_count: int,
+                     total_task_ms: float, max_turn_ms: float,
+                     tool_calls_count: int,
                      turns_count: int = 1,
                      model_id: str = "unknown",
                      status: str = "success"):
@@ -55,6 +57,7 @@ class BenchmarkRunner:
                 f"{first_token_ms:.2f}",
                 f"{stream_complete_ms:.2f}",
                 f"{total_task_ms:.2f}",
+                f"{max_turn_ms:.2f}",
                 tool_calls_count,
                 turns_count,
                 status
@@ -104,9 +107,14 @@ class TaskExecutor:
                 self.turns_count += 1
                 self.pending_tool_uses = []
                 self.stop_reason = None
+                self.turn_start_time = time.time()  # Mark turn start
                 
                 # Execute API call (implemented by subclass)
                 self._execute_api_call(task_def)
+                
+                # Calculate turn duration
+                turn_duration = (time.time() - self.turn_start_time) * 1000
+                self.turn_durations.append(turn_duration)
                 
                 # Check stop reason
                 if self.stop_reason == "tool_use":
@@ -124,6 +132,7 @@ class TaskExecutor:
             first_token_ms = (self.first_token_time - self.start_time) * 1000 if self.first_token_time else 0
             stream_complete_ms = (self.stream_end_time - self.start_time) * 1000 if self.stream_end_time else 0
             total_task_ms = (time.time() - self.start_time) * 1000
+            max_turn_ms = max(self.turn_durations) if self.turn_durations else 0
             
             # Record result
             self.runner.record_result(
@@ -132,6 +141,7 @@ class TaskExecutor:
                 first_token_ms=first_token_ms,
                 stream_complete_ms=stream_complete_ms,
                 total_task_ms=total_task_ms,
+                max_turn_ms=max_turn_ms,
                 tool_calls_count=self.tool_calls_count,
                 turns_count=self.turns_count,
                 model_id=self.model_id,
@@ -143,18 +153,21 @@ class TaskExecutor:
                 "first_token_ms": first_token_ms,
                 "stream_complete_ms": stream_complete_ms,
                 "total_task_ms": total_task_ms,
+                "max_turn_ms": max_turn_ms,
                 "turns_count": self.turns_count
             }
             
         except Exception as e:
             # Record error
             total_task_ms = (time.time() - self.start_time) * 1000
+            max_turn_ms = max(self.turn_durations) if self.turn_durations else 0
             self.runner.record_result(
                 task_id=task_id,
                 task_type=task_type,
                 first_token_ms=0,
                 stream_complete_ms=0,
                 total_task_ms=total_task_ms,
+                max_turn_ms=max_turn_ms,
                 tool_calls_count=self.tool_calls_count,
                 turns_count=self.turns_count,
                 model_id=self.model_id,
@@ -172,6 +185,8 @@ class TaskExecutor:
         self.messages = []
         self.pending_tool_uses = []
         self.stop_reason = None
+        self.turn_durations = []  # Track duration of each turn
+        self.turn_start_time = None
     
     def _execute_api_call(self, task_def: Dict[str, Any]):
         """Execute API call - to be implemented by subclass."""
