@@ -35,6 +35,9 @@ class BenchmarkRunner:
                 'max_turn_ms',
                 'tool_calls_count',
                 'turns_count',
+                'total_bedrock_requests',
+                'cross_region_requests',
+                'request_ids',
                 'status'
             ])
     
@@ -44,6 +47,9 @@ class BenchmarkRunner:
                      tool_calls_count: int,
                      turns_count: int = 1,
                      model_id: str = "unknown",
+                     total_bedrock_requests: int = 0,
+                     cross_region_requests: int = 0,
+                     request_ids: str = "",
                      status: str = "success"):
         """Record a benchmark result to CSV."""
         with open(self.output_file, 'a', newline='') as f:
@@ -60,6 +66,9 @@ class BenchmarkRunner:
                 f"{max_turn_ms:.2f}",
                 tool_calls_count,
                 turns_count,
+                total_bedrock_requests,
+                cross_region_requests,
+                request_ids,
                 status
             ])
 
@@ -84,6 +93,9 @@ class TaskExecutor:
         self.messages = []
         self.pending_tool_uses = []
         self.stop_reason = None
+        
+        # Request tracking
+        self.request_ids = []
     
     def execute_task(self, task_def: Dict[str, Any]) -> Dict[str, Any]:
         """Execute a single task and record metrics."""
@@ -145,6 +157,9 @@ class TaskExecutor:
                 tool_calls_count=self.tool_calls_count,
                 turns_count=self.turns_count,
                 model_id=self.model_id,
+                total_bedrock_requests=len(self.request_ids),
+                cross_region_requests=0,  # Will be updated by CloudTrail query
+                request_ids=",".join(self.request_ids),
                 status="success"
             )
             
@@ -171,6 +186,9 @@ class TaskExecutor:
                 tool_calls_count=self.tool_calls_count,
                 turns_count=self.turns_count,
                 model_id=self.model_id,
+                total_bedrock_requests=len(self.request_ids),
+                cross_region_requests=0,
+                request_ids=",".join(self.request_ids),
                 status=f"error: {str(e)}"
             )
             return {"status": "error", "message": str(e)}
@@ -187,6 +205,7 @@ class TaskExecutor:
         self.stop_reason = None
         self.turn_durations = []  # Track duration of each turn
         self.turn_start_time = None
+        self.request_ids = []
     
     def _execute_api_call(self, task_def: Dict[str, Any]):
         """Execute API call - to be implemented by subclass."""

@@ -1,6 +1,8 @@
 """Bedrock API benchmark script."""
+import csv
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import boto3
@@ -10,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from benchmark.benchmark_runner import BenchmarkRunner, TaskExecutor
 from benchmark.mock_tools import MockToolExecutor
+from benchmark.query_cloudtrail import CloudTrailQuerier
 
 
 class BedrockTaskExecutor(TaskExecutor):
@@ -77,6 +80,11 @@ class BedrockTaskExecutor(TaskExecutor):
             toolConfig={"tools": tools},
             inferenceConfig={"maxTokens": 4096}
         )
+        
+        # Extract request ID from response metadata
+        request_id = response.get('ResponseMetadata', {}).get('RequestId')
+        if request_id:
+            self.request_ids.append(request_id)
         
         # Process stream
         stream = response.get('stream')
@@ -180,7 +188,7 @@ class BedrockTaskExecutor(TaskExecutor):
         })
 
 
-def run_benchmark(num_runs: int = 5):
+def run_benchmark(num_runs: int = 5, query_cloudtrail: bool = True):
     """Run Bedrock benchmark."""
     print("Starting Bedrock API benchmark...")
     
@@ -194,6 +202,9 @@ def run_benchmark(num_runs: int = 5):
     tasks_file = Path('benchmark/tasks/task_definitions.json')
     with open(tasks_file) as f:
         tasks = json.load(f)
+    
+    # Track benchmark start time for CloudTrail query
+    benchmark_start_time = datetime.utcnow()
     
     # Run each task multiple times
     for run_num in range(1, num_runs + 1):
@@ -211,12 +222,77 @@ def run_benchmark(num_runs: int = 5):
                 print(f"✗ {result.get('message', 'Unknown error')}")
     
     print(f"\n✓ Benchmark complete. Results saved to {runner.output_file}")
+    
+    # Query CloudTrail to update cross-region information
+    if query_cloudtrail:
+        print("\n=== Querying CloudTrail for cross-region information ===")
+        _update_cross_region_info(runner.output_file, benchmark_start_time)
+
+
+def _update_cross_region_info(csv_file: Path, start_time: datetime):
+    """Update CSV with cross-region information from CloudTrail.
+    
+    Args:
+        csv_file: Path to CSV file to update
+        start_time: Benchmark start time for CloudTrail query
+    """
+    # Read CSV and collect request IDs
+    rows = []
+    request_ids_by_row = []
+    
+    with open(csv_file, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            rows.append(row)
+            request_ids = row.get('request_ids', '').split(',')
+            request_ids = [rid.strip() for rid in request_ids if rid.strip()]
+            request_ids_by_row.append(request_ids)
+    
+    # Collect all unique request IDs
+    all_request_ids = set()
+    for request_ids in request_ids_by_row:
+        all_request_ids.update(request_ids)
+    
+    if not all_request_ids:
+        print("No request IDs found in CSV")
+        return
+    
+    print(f"Found {len(all_request_ids)} unique request IDs")
+    
+    # Query CloudTrail
+    querier = CloudTrailQuerier(region='us-east-1')
+    cross_region_map = querier.query_request_ids(
+        request_ids=list(all_request_ids),
+        start_time=start_time
+    )
+    
+    # Update rows with cross-region information
+    for i, row in enumerate(rows):
+        request_ids = request_ids_by_row[i]
+        if request_ids:
+            cross_region_count = sum(
+                1 for rid in request_ids 
+                if cross_region_map.get(rid, False)
+            )
+            row['cross_region_requests'] = str(cross_region_count)
+    
+    # Write updated CSV
+    if rows:
+        fieldnames = list(rows[0].keys())
+        with open(csv_file, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+        
+        print(f"✓ Updated {csv_file} with cross-region information")
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Run Bedrock API benchmark')
     parser.add_argument('--runs', type=int, default=5, help='Number of runs per task')
+    parser.add_argument('--no-cloudtrail', action='store_true', 
+                       help='Skip CloudTrail query for cross-region detection')
     args = parser.parse_args()
     
-    run_benchmark(args.runs)
+    run_benchmark(args.runs, query_cloudtrail=not args.no_cloudtrail)
