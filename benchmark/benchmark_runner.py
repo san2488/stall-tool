@@ -4,7 +4,7 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 
 class BenchmarkRunner:
@@ -14,6 +14,16 @@ class BenchmarkRunner:
         self.api_type = api_type
         self.output_file = Path(output_file)
         self.output_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Request ID storage for CloudTrail queries
+        self.request_ids_file = self.output_file.with_suffix('.request_ids.json')
+        
+        # Load existing request IDs data if file exists
+        if self.request_ids_file.exists():
+            with open(self.request_ids_file, 'r') as f:
+                self.request_ids_data = json.load(f)
+        else:
+            self.request_ids_data = []
         
         # Initialize CSV if it doesn't exist
         if not self.output_file.exists():
@@ -37,19 +47,35 @@ class BenchmarkRunner:
                 'turns_count',
                 'total_bedrock_requests',
                 'cross_region_requests',
-                'request_ids',
                 'status'
             ])
+    
+    def store_request_ids(self, task_id: str, request_ids: List[str]):
+        """Store request IDs for a task separately from CSV."""
+        self.request_ids_data.append({
+            'task_id': task_id,
+            'timestamp': datetime.now().isoformat(),
+            'request_ids': request_ids
+        })
+        
+        # Save to JSON file
+        with open(self.request_ids_file, 'w') as f:
+            json.dump(self.request_ids_data, f, indent=2)
+    
+    def get_all_request_ids(self) -> List[str]:
+        """Get all request IDs from stored data."""
+        all_ids = []
+        for entry in self.request_ids_data:
+            all_ids.extend(entry['request_ids'])
+        return all_ids
     
     def record_result(self, task_id: str, task_type: str, 
                      first_token_ms: float, stream_complete_ms: float,
                      total_task_ms: float, max_turn_ms: float,
-                     tool_calls_count: int,
-                     turns_count: int = 1,
+                     tool_calls_count: int,                     turns_count: int = 1,
                      model_id: str = "unknown",
                      total_bedrock_requests: int = 0,
                      cross_region_requests: int = 0,
-                     request_ids: str = "",
                      status: str = "success"):
         """Record a benchmark result to CSV."""
         with open(self.output_file, 'a', newline='') as f:
@@ -68,7 +94,6 @@ class BenchmarkRunner:
                 turns_count,
                 total_bedrock_requests,
                 cross_region_requests,
-                request_ids,
                 status
             ])
 
@@ -146,6 +171,9 @@ class TaskExecutor:
             total_task_ms = (time.time() - self.start_time) * 1000
             max_turn_ms = max(self.turn_durations) if self.turn_durations else 0
             
+            # Store request IDs separately
+            self.runner.store_request_ids(task_id, self.request_ids)
+            
             # Record result
             self.runner.record_result(
                 task_id=task_id,
@@ -159,7 +187,6 @@ class TaskExecutor:
                 model_id=self.model_id,
                 total_bedrock_requests=len(self.request_ids),
                 cross_region_requests=0,  # Will be updated by CloudTrail query
-                request_ids=",".join(self.request_ids),
                 status="success"
             )
             
@@ -188,7 +215,6 @@ class TaskExecutor:
                 model_id=self.model_id,
                 total_bedrock_requests=len(self.request_ids),
                 cross_region_requests=0,
-                request_ids=",".join(self.request_ids),
                 status=f"error: {str(e)}"
             )
             return {"status": "error", "message": str(e)}

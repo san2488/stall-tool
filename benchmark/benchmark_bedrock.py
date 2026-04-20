@@ -2,7 +2,7 @@
 import csv
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import boto3
@@ -204,7 +204,7 @@ def run_benchmark(num_runs: int = 5, query_cloudtrail: bool = True):
         tasks = json.load(f)
     
     # Track benchmark start time for CloudTrail query
-    benchmark_start_time = datetime.utcnow()
+    benchmark_start_time = datetime.now(timezone.utc)
     
     # Run each task multiple times
     for run_num in range(1, num_runs + 1):
@@ -223,9 +223,12 @@ def run_benchmark(num_runs: int = 5, query_cloudtrail: bool = True):
     
     print(f"\n✓ Benchmark complete. Results saved to {runner.output_file}")
     
-    # Query CloudTrail to update cross-region information
+    # Query CloudTrail to update cross-region information after all runs
     if query_cloudtrail:
         print("\n=== Querying CloudTrail for cross-region information ===")
+        print("Waiting 30 seconds for CloudTrail event delivery...")
+        import time
+        time.sleep(30)
         _update_cross_region_info(runner.output_file, benchmark_start_time)
 
 
@@ -236,25 +239,22 @@ def _update_cross_region_info(csv_file: Path, start_time: datetime):
         csv_file: Path to CSV file to update
         start_time: Benchmark start time for CloudTrail query
     """
-    # Read CSV and collect request IDs
-    rows = []
-    request_ids_by_row = []
+    # Load request IDs from separate file
+    request_ids_file = csv_file.with_suffix('.request_ids.json')
+    if not request_ids_file.exists():
+        print("No request IDs file found")
+        return
     
-    with open(csv_file, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            rows.append(row)
-            request_ids = row.get('request_ids', '').split(',')
-            request_ids = [rid.strip() for rid in request_ids if rid.strip()]
-            request_ids_by_row.append(request_ids)
+    with open(request_ids_file, 'r') as f:
+        request_ids_data = json.load(f)
     
     # Collect all unique request IDs
     all_request_ids = set()
-    for request_ids in request_ids_by_row:
-        all_request_ids.update(request_ids)
+    for entry in request_ids_data:
+        all_request_ids.update(entry['request_ids'])
     
     if not all_request_ids:
-        print("No request IDs found in CSV")
+        print("No request IDs found")
         return
     
     print(f"Found {len(all_request_ids)} unique request IDs")
@@ -263,18 +263,26 @@ def _update_cross_region_info(csv_file: Path, start_time: datetime):
     querier = CloudTrailQuerier(region='us-east-1')
     cross_region_map = querier.query_request_ids(
         request_ids=list(all_request_ids),
-        start_time=start_time
+        start_time=start_time,
+        max_retries=3,
+        retry_delay=60
     )
     
-    # Update rows with cross-region information
-    for i, row in enumerate(rows):
-        request_ids = request_ids_by_row[i]
-        if request_ids:
-            cross_region_count = sum(
-                1 for rid in request_ids 
-                if cross_region_map.get(rid, False)
-            )
-            row['cross_region_requests'] = str(cross_region_count)
+    # Read CSV and update cross-region information by matching with request_ids_data
+    rows = []
+    with open(csv_file, 'r') as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader):
+            # Match this CSV row with corresponding request IDs entry
+            if i < len(request_ids_data):
+                request_ids = request_ids_data[i]['request_ids']
+                cross_region_count = sum(
+                    1 for rid in request_ids 
+                    if cross_region_map.get(rid, False)
+                )
+                row['cross_region_requests'] = str(cross_region_count)
+            
+            rows.append(row)
     
     # Write updated CSV
     if rows:
