@@ -1,0 +1,29 @@
+[
+  {
+    "task_id": "summarize_1",
+    "task_type": "summarize",
+    "prompt": "Summarize the pets-workshop project in 2-3 sentences. Focus on what the application does and its main technologies.",
+    "context": {
+      "project_path": "benchmark/fixtures/pets-workshop"
+    },
+    "expected_tools": []
+  },
+  {
+    "task_id": "file_edit_1",
+    "task_type": "file_edit",
+    "prompt": "Refactor the validate_gender method in server/models/dog.py to use a list comprehension or set for gender validation instead of multiple 'or' conditions.",
+    "context": {
+      "file_path": "benchmark/fixtures/pets-workshop/server/models/dog.py"
+    },
+    "expected_tools": ["fs_read", "fs_write"]
+  },
+  {
+    "task_id": "project_1",
+    "task_type": "project",
+    "prompt": "Create 3 separate Python files for a CLI calculator. You MUST create each file individually:\n\nFirst, create /tmp/benchmark_project/main.py with argparse CLI code.\nThen, create /tmp/benchmark_project/calculator.py with add, subtract, multiply, divide functions.\nFinally, create /tmp/benchmark_project/utils.py with input validation functions.\n\nUse fs_write tool 3 times, once for each file.",
+    "context": {
+      "output_dir": "/tmp/benchmark_project"
+    },
+    "expected_tools": ["fs_write", "fs_write", "fs_write"]
+  }
+]
