@@ -40,3 +40,7 @@ Thumbs.db
 generate-fibonacci.py
 
 todo.md
+
+# benchmark results (contain AWS request IDs)
+benchmark/results/
+benchmark/results_backup_*/
